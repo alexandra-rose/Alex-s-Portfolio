@@ -1,0 +1,201 @@
+---
+title: "Causal Inference- Final Assignment 29.5.2024"
+author: "Alexandra Salo"
+format: html
+editor: visual
+---
+
+## Exercise 1. Pre-analysis plan
+
+Universal Basic Income (UBI) has become a controversial point of debate in recent years, with advocates highlighting its potential to reduce bureaucracy, enhance purchasing power, and improve mental health and dignity, while critics warn of possible increases in unemployment and sectoral work shortages. Especially in countries with already strong systems of social benefits, this is discussed as an alternative for the various social benefit packages, for example in Finland. The objective of this study is to design a research plan to evaluate the causal effects of UBI on several key outcomes in the ‘perfect world’ without any constraints.
+
+The primary hypothesis is that UBI will have a positive impact on mental health and economic stability. The secondary hypothesis posits that UBI may reduce employment in certain sectors but overall improve job satisfaction and increase voluntary work participation.
+
+### The setup of the study
+
+I propose that this study would be conducted in a few countries with diverse socioeconomic populations and the administrative capacities to implement UBI. These would be with different social infrastructures that are both still able to adequately implement this study, for example Finland, Spain and Croatia. Here we have 3 different cultures, societies but still largely quite similar as European states. Collaborations could be established with relevant ministries such as the Ministry of Social Affairs and the Ministry of Labor of each participating country, along with other public agencies, to facilitate the study's implementation and monitoring. I choose European countries for this study because while it would be interesting to see the outcomes in vastly different societies, the integrity of the results would depend largely on the infrastructure in place and the ability to gather reliable data. It could also be interesting to see how the differences in vastly different cultures would play out in this study, so a ‘second round’ of the study could be conducted comparing a few countries in another continent, for example in South America or South-East Asia.
+
+Success in this study will be defined by improvements in different metrics. Primary success metrics would include employment rates, mental health indicators, and economic behavior such as consumption patterns and savings rates. Secondary metrics encompass reductions in state bureaucracy, enhanced social cohesion, and overall public health improvements. These figures could be taken from third-party data sources, eg. a ministry’s budget for example or calculations made.
+
+To comprehensively evaluate the impact of UBI, the study will measure several outcome indicators. Employment outcomes will include unemployment rates and changes in sectoral employment. Mental health outcomes will be assessed through self-reported well-being, stress levels, and usage of mental health services. Economic behavior will be tracked by analyzing self-reported consumption patterns, savings rates, and poverty levels.
+
+Sample size calculations will be conducted based on power calculations to ensure sufficient statistical power to detect anticipated effect sizes. Probabilistic sampling methods would be used to select a representative sample of the population, with additional participants included to account for potential attrition. Participants will be randomly assigned to either receive UBI (treatment group) or not (control group). I suggest the UBI given be adjusted for the country in question, and would not be a large enough sum to live off of comfortably in the country. To ensure comparability, randomization will be stratified by key demographic variables such as age, gender, and socioeconomic background. This stratified randomization will help balance the groups and improve the reliability of the results. Across different countries relatively similar groups will be aimed to be achieved, however this would take into account the relevant income levels in a country and other socioeconomic factors.
+
+The control group, which does not receive UBI, will serve as the counterfactual, representing what would have happened in the absence of UBI. Additionally, the study would employ instrumental variables to address potential non-compliance and ensure robustness. I suggest geographical distance from administrative centers or date of birth could serve as instruments as these may affect the likelihood of complying with the studies rules.
+
+Baseline data will be collected before the implementation of UBI to understand initial conditions. Follow-up data will be gathered at multiple intervals (e.g., every month or 2-3 months) to capture both short-term and long-term impacts. The study in itself would be 2 years long, so we would be able to rule out any seasonal/ short term factors that may be affecting our outcome variables. Data collected will include surveys administered to the participants and administrative records to ensure comprehensive coverage.
+
+### The analysis plan
+
+The primary strategy for the analysis will be using the randomized controlled trial (RCT). Additionally, IV analysis will be conducted to handle non-compliance and potential spillover effects. The chosen instruments will be validated to ensure they affect the likelihood of receiving UBI but do not directly impact the outcome variables. Randomization inherently reduces selection bias by ensuring equal chances of receiving UBI across participants. To further minimize bias, blinding will be implemented where feasible within the different countries. Balance tests will be conducted to confirm that treatment and control groups are comparable at baseline.
+
+The study will utilize regression analysis, specifically difference-in-differences (DiD) models, to compare changes over time between the treatment and control groups. For addressing non-compliance, a two-stage least squares (2SLS) regression will be used, leveraging IV analysis. The independent variable will be the reception of UBI, while dependent variables will include employment status, mental health scores, and economic behavior indicators. Control variables such as demographic characteristics, initial socioeconomic status, and regional economic conditions will be included to refine the analysis.
+
+The statistical analysis will begin with descriptive statistics to summarize baseline characteristics and outcome variables. Inferential statistics, including t-tests, chi-square tests, and regression analysis, will be employed to test hypotheses. Robustness checks will be performed through sensitivity analyses to ensure the validity of the findings. Power analysis as mentioned prior will determine the minimum sample size required to detect significant effects. Adjustments will be made for expected attrition and non-compliance to ensure the study retains sufficient power throughout its duration.
+
+The study will follow a detailed timeline from planning and data collection to implementation and analysis. The budget will cover participant recruitment, data collection, personnel, and logistical costs, ensuring the study is adequately funded for its entire duration, in the perfect world there would be no limit to this budget.
+
+Ethical approval will be obtained from relevant institutional review boards after proposing this research. Informed consent will be secured from all participants, and measures will be implemented to protect data privacy and ensure that there are no breaches of confidentiality.
+
+## Exercise 3
+
+```{r}
+# Load necessary libraries
+library(rdrobust)
+library(foreign)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(modelsummary)
+library(rdrobust)
+library(rddensity)
+
+# Read the dataset
+extremist_data <- read.dta("./Extremist (1).dta")
+
+# Define the running variable and outcome variables
+rv <- extremist_data$rv
+extremist_data <- extremist_data %>%
+  rename(
+    vote_share = dv,
+    win_prob = dv_win
+  )
+
+
+# Step 1: Visualize treatment assignment
+ggplot(extremist_data, aes(x = rv, y = as.factor(treat), color = as.factor(treat))) +
+  geom_point(size = 0.5, alpha = 0.5, position = position_jitter(width = 0, height = 0.25, seed = 1234)) + 
+  geom_vline(xintercept = 0) + 
+  labs(x = "Running Variable (rv)", y = "Treatment Assignment (treat)") + 
+  guides(color = FALSE)
+
+# Step 2: Verify compliance with the assignment rule
+extremist_data %>% 
+  group_by(treat, rv <= 0) %>% 
+  summarize(count = n())
+
+# Step 3: Check for discontinuity in the running variable
+ggplot(extremist_data, aes(x = rv, fill = as.factor(treat))) +
+  geom_histogram(binwidth = 0.05, color = "white", boundary = 0) + 
+  geom_vline(xintercept = 0) + 
+  labs(x = "Running Variable (rv)", y = "Count", fill = "Treatment")
+
+# Density test for discontinuity
+test_density <- rddensity(extremist_data$rv, c = 0)
+summary(test_density)
+
+plot_density_test <- rdplotdensity(rdd = test_density, 
+                                   X = extremist_data$rv, 
+                                   type = "both")
+```
+The first plot shows a clear assignment rule: individuals with rv greater than 0 receive the treatment, while those with rv less than or equal to 0 do not. The points are well-separated around the cutoff, indicating compliance with the assignment rule.
+
+The histogram shows the distribution of the running variable on either side of the cutoff.
+The distribution appears smooth around the cutoff, with no significant jump or discontinuity, suggesting no manipulation of the running variable around the cutoff.
+
+The density plot shows the estimated density of the running variable around the cutoff.
+The densities on either side of the cutoff are visually similar, and the confidence intervals overlap, indicating no significant discontinuity. This visual evidence complements the statistical results, supporting the conclusion that there is no manipulation of the running variable around the cutoff.
+
+```{r}
+# Step 4: Check for discontinuity in the outcome variables
+
+# Create the plot
+ggplot(extremist_data, aes(x = rv, y = vote_share, color = as.factor(treat))) +
+  geom_point(size = 0.5, alpha = 0.5) + 
+  geom_smooth(data = filter(extremist_data, rv <= 0), aes(x = rv, y = vote_share), method = "lm") +
+  geom_smooth(data = filter(extremist_data, rv > 0), aes(x = rv, y = vote_share), method = "lm") +
+  geom_vline(xintercept = 0) +
+  labs(x = "Running Variable (rv)", y = "Vote Share", color = "Treatment")
+
+#Basic plot with only points, I couldnt get adding smooth line to work
+ggplot(extremist_data, aes(x = rv, y = win_prob, color = as.factor(treat))) +
+  geom_point(size = 0.5, alpha = 0.5) + 
+  geom_smooth(data = filter(extremist_data, rv <= 0), aes(x = rv, y = win_prob), method = "lm") +
+  geom_smooth(data = filter(extremist_data, rv > 0), aes(x = rv, y = win_prob), method = "lm") +
+  geom_vline(xintercept = 0) +
+  labs(x = "Running Variable (rv)", y = "Probability of Winning", color = "Treatment")
+
+# Step 5: Measure the size of the effect
+
+# Parametric estimation
+extremist_centered <- extremist_data %>% 
+  mutate(rv_centered = rv - 0)
+
+model_simple <- lm(vote_share ~ rv_centered + treat, data = extremist_centered)
+tidy(model_simple)
+
+model_bw_10 <- lm(vote_share ~ rv_centered + treat, data = filter(extremist_centered, rv_centered >= -0.1 & rv_centered <= 0.1))
+tidy(model_bw_10)
+
+model_bw_5 <- lm(vote_share ~ rv_centered + treat, data = filter(extremist_centered, rv_centered >= -0.05 & rv_centered <= 0.05))
+tidy(model_bw_5)
+
+modelsummary(list("Full data" = model_simple, "Bandwidth = 10" = model_bw_10, "Bandwidth = 5" = model_bw_5))
+
+```
+In the first plot it shows a slight difference in the fitted lines on either side of the cutoff.There appears to be a small discontinuity at the cutoff, suggesting a potential effect of the treatment on vote share.In the second plot it shows a noticeable difference in the fitted lines on either side of the cutoff. There is a visible discontinuity at the cutoff, suggesting a more substantial effect of the treatment on the probability of winning.
+
+The models indicate a small negative effect of the treatment on vote share, with the magnitude of the effect varying slightly depending on the bandwidth used.The R² values are generally low, suggesting that the models do not explain much of the variance in vote share.
+
+Overall, the analysis suggests a small but noticeable effect of the treatment on both vote share and probability of winning, with the effect on the probability of winning being more pronounced. The models fitted with narrower bandwidths provide a more localized estimate of the treatment effect, which is a common approach in regression discontinuity design to ensure that the estimates are more relevant to observations near the cutoff.
+
+```{r}
+# Non-parametric estimation
+rdd_nonparam <- rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0)
+summary(rdd_nonparam)
+
+# Plot non-parametric model
+rdplot(y = extremist_data$vote_share, x = extremist_data$rv, c = 0)
+
+# Varying bandwidths for sensitivity analysis
+rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0, h = rdd_nonparam$bws[1]) %>% summary()
+rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0, h = rdd_nonparam$bws[1] * 2) %>% summary()
+rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0, h = rdd_nonparam$bws[1] / 2) %>% summary()
+
+# Varying kernels for sensitivity analysis
+rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0, kernel = "epanechnikov") %>% summary()
+rdrobust(y = extremist_data$vote_share, x = extremist_data$rv, c = 0, kernel = "uniform") %>% summary()
+
+```
+The estimate of the treatment effect (-0.034) suggests that an extremist victory in the primary reduces the general election vote share of the party by 3.4 percentage points. However, this effect is not statistically significant at the 5% level (p-value = 0.220 for the conventional method). The estimated bandwidth (h) is 0.081, indicating the range around the cutoff used for the regression.
+
+The treatment effect remains negative across different bandwidths but is not statistically significant in any case.The magnitude of the effect is relatively stable around -3% to -3.5%, suggesting robustness in the direction of the effect.
+
+The direction and magnitude of the effect remain consistent with the original estimate when using different kernels, indicating robustness in the results.
+The treatment effect is slightly less negative with the uniform kernel but still not statistically significant.
+
+```{r}
+# Heterogeneity analysis for safe vs. open districts
+safe <- extremist_data$safe_for_party
+rdd_safe <- rdrobust(extremist_data$vote_share[safe == 1], rv[safe == 1])
+rdd_open <- rdrobust(extremist_data$vote_share[safe == 0], rv[safe == 0])
+
+summary(rdd_safe)
+summary(rdd_open)
+
+# Check for discontinuity in heterogeneity analysis
+ggplot() +
+  geom_point(data = extremist_data, aes(x = rv, y = vote_share, color = as.factor(safe)), size = 0.5, alpha = 0.5) + 
+  geom_smooth(data = filter(extremist_data, rv <= 0 & safe == 1), aes(x = rv, y = vote_share), method = "lm", color = "blue") +
+  geom_smooth(data = filter(extremist_data, rv > 0 & safe == 1), aes(x = rv, y = vote_share), method = "lm", color = "blue") +
+  geom_smooth(data = filter(extremist_data, rv <= 0 & safe == 0), aes(x = rv, y = vote_share), method = "lm", linetype = "dashed", color = "red") +
+  geom_smooth(data = filter(extremist_data, rv > 0 & safe == 0), aes(x = rv, y = vote_share), method = "lm", linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 0) +
+  labs(x = "Running Variable (rv)", y = "Vote Share", color = "District Type (Safe/Not Safe)") +
+  scale_color_manual(values = c("0" = "red", "1" = "blue"), labels = c("0" = "Not Safe", "1" = "Safe")) +
+  theme_minimal()
+```
+Statistically for safe districts, the estimated effect at the cutoff is positive but not statistically significant. For not safe districts, the estimated effect at the cutoff is negative but also not statistically significant.
+
+Then we can visualize this in a plot. The plot visualizes the vote share as a function of the running variable (rv) for two types of districts: safe and not safe. The blue lines represent safe districts, and the red dashed lines represent not safe districts.
+
+There is a noticeable upward trend in the vote share as the running variable increases for safe districts.The discontinuity at the cutoff point (rv = 0) indicates a significant jump in vote share for districts considered safe.
+
+The trend in vote share for not safe districts appears more flat or slightly decreasing as the running variable increases. There is less evident discontinuity at the cutoff point compared to safe districts.
+These insights suggest that the impact of an extremist primary victory on the vote share might be more pronounced in safe districts than in not safe districts.
+
+###Conclusion
+
+This analysis has used Regression Discontinuity Design (RDD) to investigate the impact of extremist primary victories on general election outcomes, focusing on vote share and probability of winning. The results showed a small, negative, but statistically insignificant effect on vote share (around 3-4 percentage points) and probability of winning, with greater variability in not safe districts. The heterogeneity analysis suggested a more pronounced effect in safe districts, but still not significant. Sensitivity analyses with varying bandwidths and kernels confirmed the robustness in the direction of the effect, though statistical significance remained elusive.
+
+Comparing these findings to Hall's study, which analyzed U.S. House elections from 1980-2010, reveals key differences. Hall's study reported significant and substantial electoral penalties for extremist candidates, with general election vote share decreasing by 9-13 percentage points and the probability of winning dropping by 35-54 percentage points. This contrast highlights the stronger and more conclusive evidence in Hall's work, emphasizing the strategic disadvantage of nominating extremist candidates in primaries, which was not as evident in this analysis due to smaller effect sizes and lack of statistical significance.

@@ -1,0 +1,655 @@
+---
+title: "assignment-textmining"
+format: html
+editor: visual
+---
+
+## Analysis of the speeches of Joe Biden and Donald Trump in the 2020 elections
+
+-   The main objective is to tell a story from the text data that makes sense. The notebook should change the recipient's state of knowledge by providing information about the text without the need for the recipient to have read it.
+
+-   The data may support or disagree with the initial hypothesis. What is important is that the student is able to connect the results with information from the real world.
+
+-   The notebook must combine cells of code with blocks of text explaining the workflow, including headings to structure the document and make it easy to read. 
+
+-   The student must use and explain at least 3 techniques learned in class for text processing.
+
+-   All information must be contained **in** the rmd notebook. No attachments or explanatory text documents on the side will be allowed.
+
+-   Only text file for analysis must be provided - if there is one.
+
+-   All code cells must work. Package installation must be included, commented (#) and explained.
+
+-   Non-obvious lines of code must be commented (#)
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(wordcloud)
+library(widyr)
+library(ggraph)
+library(igraph)
+```
+
+In my analysis I want to look at the campaign season for the 2020 US Presidential elections, I wanted to see how the speeches interacted amongst themselves and how the analysis differed between time and speakers. For this purpose I obtained a dataset with speeches from the campaign season from Kaggle here: <https://www.kaggle.com/datasets/imuhammad/us-2020-presidential-election-speeches>.
+
+```{r}
+#read my data obtained from Kaggel
+elections_2020_speeches <- read_csv("./us_2020_election_speeches.csv")
+  
+```
+
+```{r}
+# Filter the data for speeches by Donald Trump, Mike Pence, Joe Biden or Kamala Harris
+filtered_speeches <- elections_2020_speeches %>% 
+  filter(speaker %in% c("Donald Trump", "Mike Pence", "Joe Biden", "Kamala Harris"))
+
+# Convert the 'date' column to a Date object (this will be useful later)
+filtered_speeches$date <- mdy(filtered_speeches$date)
+
+# Convert the speeches into a tidy text format
+tidy_speeches <- filtered_speeches %>%
+  unnest_tokens(word, text, 
+                drop = F, 
+                strip_punct = TRUE, 
+                to_lower = F) # 'word' is the column name for the tokenized words, and 'text' is the column to be tokenized
+
+#Filter out unneccesary words/ numbers
+tidy_speeches <- tidy_speeches %>%
+  anti_join(stop_words) |> #remove stop words
+  filter(!grepl("^[0-9]+$", word))   # Remove words that are entirely numeric
+
+#Lets check it out
+tidy_speeches
+
+```
+
+### Check how many speeches there are in each campaign
+
+```{r}
+#Lets check how many speeches were given throughout the campaigns of each person
+speech_count <- filtered_speeches %>%
+  group_by(speaker) %>%
+  summarise(number_of_speeches = n_distinct(title))  # Title shows all the unique speeches
+speech_count
+```
+
+We see that Joe Biden had the most speeches recorded in his campaign (at least according to this dataset). We see Kamala Harris had the least and Donald Trump had about 15 less speeches than Joe Biden. Kamala Harris and Mike Pence had much less speeches than their party front runners.
+
+## Sentiment analysis by speech
+
+```{r}
+speeches_sentiment <- tidy_speeches %>%
+  #find the sentiment for each word using bing lexicon
+  inner_join(get_sentiments("bing")) %>%
+  # count the sentiment noted in bing
+  count(title, date, speaker, sentiment) %>%
+  #we write positive and negative in different columns
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+  #we substract positive minus negative to find a net sentiment
+  mutate(sentiment = positive - negative)
+
+speeches_sentiment
+```
+
+Here we get the total sentiments per speech, ignoring all the NAs (so all the words that were not included in the bing lexicon).
+
+```{r}
+# Calculate the average sentiment per speech per speaker
+average_sentiment_speech <- speeches_sentiment %>%
+  group_by(speaker, title) %>%
+  summarize(average_sentiment = mean(sentiment, na.rm = TRUE), .groups = 'drop')
+
+ggplot(average_sentiment_speech, aes(x = speaker, y = average_sentiment, fill = speaker)) +
+  geom_bar(stat = "identity", position = position_dodge(), show.legend = FALSE) +
+  labs(x = "Speaker", y = "Average Sentiment", title = "Average Sentiment per Speech per Speaker") +
+  theme_minimal() +
+  scale_y_continuous(limits = c(0, max(average_sentiment_speech$average_sentiment)))  # Set y-axis to start at 0
+
+
+```
+
+Using the bing lexicon, which assigns words to either positive or negative category and summing these counts against each other we see that the average sentiment per speech of the Republican candidates is far higher than the Democratic candidates. At first this difference surprised me, however as I thought avout it more it makes sense since usually Trump speeches are have quite high modality and use quite simple language, Trump often makes great claims about the USA, while Biden's speeches may be more critical generally of what needs to change and discusses more concretely policy he'd like to enact in his term thus bringing down his sentiment scores.
+
+### Comparison among lexicons
+
+I continue the sentiment analysis using the three lexicons, AFINN, Bing and NRC, applied to the speakers, to compare the distribution of sentiment in the race. We approach the sentiment analysis with different lexicons as we note that the lexicons can have biases, so we want to see these through the lenses of different lexicons as well.
+
+```{r}
+#AFINN- We need to summarise quantities to get average sentiment.
+afinn <- tidy_speeches |> 
+  #get the values of the strength and the direction of sentiment of the words, eg. abandon has a negative sentiment value of -2 
+  inner_join(get_sentiments("afinn")) |> 
+  #group by the speeches
+  group_by(title, date) |> 
+  #we sum up the values given to each word within a speech
+  summarise(sentiment = sum(value)) |>
+  #we note that we used the AFINN method
+  mutate(method = "AFINN")
+```
+
+```{r}
+#for Bing and NRC we do it in one step.
+bing_and_nrc <- bind_rows(
+  #Bing method
+  tidy_speeches %>% 
+    #we get sentiments from bing
+    inner_join(get_sentiments("bing")) %>%
+    #we create the column for bing
+    mutate(method = "Bing et al."),
+  #NRC
+  tidy_speeches %>% 
+    #we get sentiment from nrc 
+    inner_join(get_sentiments("nrc") %>% 
+                 #we filter just sentiment, not emotions
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    #we create the column for nrc
+    mutate(method = "NRC")) %>%
+  #we divide into speakers
+  count(method, title, date, speaker, sentiment) %>%
+  #we write positive and negative in different columns
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  #we extract net sentiment by substraction
+  mutate(sentiment = positive - negative)
+```
+
+We now have an estimate of the average speech sentiment (positive - negative) in each speakers speeches for each sentiment lexicon. Let's look at them:
+
+```{r}
+afinn
+bing_and_nrc
+```
+
+Then we bind them together and visualize the lexicons distribution of the speeches into 'positive' or 'negative'.
+
+```{r}
+#bind the three of them
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  #make the plot with x=index (chunks), y=sentiment and fill by lexicon (method)
+  ggplot(aes(x = date, y = sentiment, fill = method)) +
+  geom_col(show.legend = TRUE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y") +
+  labs(x = "Date of Speech", y = "Sentiment") +  # Change the x-axis label
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate the x-axis labels for better readability
+```
+
+We see that the bing method is clearly allocating the most evenly between positive and negative words, and for example the NRC lexicon is almost exclusively allocating positive words, while the afinn method has both positive and negative presence, however we see more extreme values both negatively and positively, which makes sense since it gives a strength and a direction of the sentiment for each word.
+
+From this graph we can also see a general development of the speeches across time, with a clearly more intense time period closer to the election in September- November, with many more speeches with especially generally positive sentiments. In the summer period, we also see a generally more pessimistic time with more negative speeches being given.
+
+### Using the AFINN lexicon to see the development of average sentiment value for each speaker across speeches across 2020.
+
+Since the afinn method was able to show both negative and positive values, and it provides us with the strength, I decided to use it for this next graph to explore the development of sentiment for each speaker throughout the year.
+
+```{r}
+# Join with the sentiment scores from Bing lexicon
+tidy_speeches_afinn <- tidy_speeches %>%
+  inner_join(get_sentiments("afinn"), by = "word")
+
+# Calculate the average sentiment per speech per date
+average_sentiment_by_date <- tidy_speeches_afinn %>%
+  group_by(date, speaker) %>%
+  summarise(average_sentiment = mean(value, na.rm = TRUE), .groups = 'drop')  # 
+
+# Create a time series plot
+ggplot(average_sentiment_by_date, aes(x = date, y = average_sentiment, color = speaker)) +
+  geom_line() +
+  labs(x = "Date", y = "Average Sentiment", title = "Average Sentiment of Speeches Over Time") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+We see that Kamala and Mike seem to join the campaigns with full force after the summer and we see a clear difference in the sentiments of the speeches between Pence and Trump, where Trump remains generally more negative in the later stages of the campaign, Pence's speeches are much higher in sentiment than Trumps. On the other hand, Harris' and Biden's speeches seem to be in the same ball park in terms of sentiment. We also see that it seems that the sentiments of the aspiring presidents seem to follow each other a bit, and follow similar general trends. Lets visualize this relationship below.
+
+```{r}
+# Join with the sentiment scores from AFINN lexicon
+tidy_speeches_afinn <- tidy_speeches %>%
+  inner_join(get_sentiments("afinn"), by = "word")
+
+# Filter for speeches by Trump and Biden
+tidy_speeches_afinn_filtered <- tidy_speeches_afinn %>%
+  filter(speaker %in% c("Donald Trump", "Joe Biden"))
+
+# Calculate the average sentiment per speech per date for Trump and Biden
+average_sentiment_by_date <- tidy_speeches_afinn_filtered %>%
+  group_by(date, speaker) %>%
+  summarise(average_sentiment = mean(value, na.rm = TRUE), .groups = 'drop')
+
+# Create a time series plot for Trump and Biden
+ggplot(average_sentiment_by_date, aes(x = date, y = average_sentiment, color = speaker)) +
+  geom_line() +
+  labs(x = "Date", y = "Average Sentiment", title = "Average Sentiment of Speeches Over Time") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+```
+
+We see generally some similar trends between the two, especially around October we see similar time periods where both aspiring presidents have a peak or a dip. This enforces the idea that the campaigns must have been heavily following each other presences and mimicking and trying to play on the weaknesses of the other candidate, perhaps disussing similar topics around the same time.
+
+### Most negative speeches
+
+Something that is interesting to consider after seeing this graph is which speech was the most negative of Trump and Biden? In other words **which speech has the highest proportion of negative words?**
+
+```{r}
+#filter negative words from Bing
+bingnegative <- get_sentiments("bing") %>% 
+  filter(sentiment == "negative")
+
+bingnegative
+```
+
+```{r}
+# make a dataframe (wordcounts) with number of words per chapter
+wordcounts <- tidy_speeches %>%
+  group_by(speaker, title) %>%
+  summarize(words = n())
+```
+
+```{r}
+#find the number of negative words by chapter and divide by the total words in chapter
+tidy_speeches %>%
+  #semi_join: returns all words in books with a match in bingnegative
+  semi_join(bingnegative) %>%
+  #group by book and chapter to summarize how many negative words by chapter
+  group_by(speaker, title) %>%
+  summarize(negativewords = n()) %>%
+  #left_join keeps all words in wordcounts and makes a dataframe
+  left_join(wordcounts, by = c("speaker", "title")) %>%
+  #create a column in the dataframe with the ratio
+  mutate(ratio = negativewords/words) %>%
+  #we select the highest ratios
+  slice_max(ratio, n = 1) %>% 
+  ungroup()
+```
+
+This makes sense, as all speeches are about quite heavy and negative topics/ themes.
+
+## Term frequency in the speeches
+
+To look at the content of the speeches themselves, we look to the next part of our analysis term frequency and then later TF-IDF.
+
+```{r}
+#first we count the words by speaker
+tidy_words <- tidy_speeches |> 
+  count(speaker, word, sort = TRUE)
+
+#we get a dataframe with the number of times the word appears in each book
+tidy_words
+```
+
+```{r}
+total_words <- tidy_words %>% 
+  #we group by books to sum all the totals in the n column of book_words
+  group_by(speaker) %>% 
+  #we create a column called total with the total of words by book
+  summarize(total = sum(n))
+
+total_words
+
+#we add a column with this total number to the dataframe book_words
+tidy_words <- left_join(tidy_words, total_words)
+tidy_words
+
+```
+
+Then we are ready to calculate the term frequency
+
+```{r}
+tidy_words <- tidy_words %>%
+  #we add a column for term_frequency in each novel
+  mutate(term_frequency = n/total)
+
+tidy_words
+```
+
+To visualize the term requencies I make a plot to see how words are distributed in the whole campaign season.
+
+```{r}
+#we calculate the distribution and put it in the x axis, filling by book
+ggplot(tidy_words, aes(term_frequency)) +
+  #we create the bars histogram
+  geom_histogram(show.legend = TRUE) +
+  #we set the limit for the term frequency in the x axis
+  xlim(NA, 0.0009)
+```
+
+Here we can see the term frequencies for words in the entire campaign season. To the left we see how many words are present in each term frequency, so we see that a vast majority of words are used very little in relations to other words by each speaker, and there are very low amounts of words that are used with high frequency among a speaker and their speeches.
+
+#### Next we can visualize distribution by speaker
+
+```{r}
+#we calculate the distribution and put it in the x axis, filling by book
+ggplot(tidy_words, aes(term_frequency, fill = speaker)) +
+  #we create the bars histogram
+  geom_histogram(show.legend = TRUE) +
+  #we set the limit for the term frequency in the x axis
+  xlim(NA, 0.0002) +
+  #plot settings
+  facet_wrap(~speaker, ncol = 2, scales = "free_y")
+```
+
+Most words have very low frequencies (on the left) and a few words have very high frequencies (on the right). However between Trump and Biden we see interesting difference, as it seems like Trumps tail is less descending and more of a jump after the first long bar. Showing that maybe the words he uses frequently he uses more frequently than Biden for example, this could show a more limited vocabulary in Trump for example or a tendency to use words more frequently.
+
+## Analyzing the TF-IDF by speaker
+
+```{r}
+#we create a new variable with the analysis
+speech_tf_idf <- tidy_words %>%
+  bind_tf_idf(word, speaker, n)
+
+speech_tf_idf
+```
+
+These first words in the dataframe have very low TF-IDF, near zero, because these are words that occur in many of the speeches across different speakers.
+
+#### Higher TF-IDF words
+
+The more documents containing the word, the less distinctive it is of any of them, so the TF-IDF score will be higher for words that occur fewer times. The TF-IDF analysis rewards these words.
+
+To check this, we just have to arrange the dataframe by tf-idf:
+
+```{r}
+desc <- speech_tf_idf %>%
+  #we exclude the total column which is not necessary now
+  select(-total) %>%
+  #we arrange by tf-idf in descending order
+  arrange(desc(tf_idf)) 
+
+desc |> 
+  filter(speaker == "Joe Biden")
+
+desc |> 
+  filter(speaker == "Donald Trump")
+```
+
+Here we see some differences in the term frequencies among the different speakers, we see for example some words that make sense for Trump. He uses the word sleepy with much more frequency than the other speakers, most likely referencing how he calls Joe Biden 'sleepy Joe'. We also see words such as fake (most likely referring to other people, news, or policies) and the word aliens (likely referring to immigrants). Bidens words that were unique to his speeches were more calm, with mostly unique names and words such as undocumented which were not used by other candidates. Below we can see these most unique words per speaker visualized.
+
+```{r}
+speech_tf_idf %>%
+  group_by(speaker) %>%
+  #choose maximum number of words
+  slice_max(tf_idf, n = 20) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(word, tf_idf), fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~speaker, ncol = 2, scales = "free") +
+  labs(x = "tf-idf", y = NULL)
+```
+
+# N-grams and relationships between words in the speeches
+
+The last analysis was interesting, but it left me with some unanswered questions and I would benefit from more context in the analysis of the more and less frequent words. So using bigrams and trigrams are a great way to expand the analysis to include more context.
+
+```{r}
+speech_bigrams <- filtered_speeches %>%
+  #we take the text in austen_books, and tokenize it to sequences of 2 words
+  unnest_tokens(bigram, text, token = "ngrams", n = 2) %>%
+  #we filter all N/A outputs
+  filter(!is.na(bigram))
+
+speech_bigrams
+
+bigrams_separated <- speech_bigrams %>%
+  #we separate each bigram in two columns, word1 and word2
+  separate(bigram, c("word1", "word2"), sep = " ")
+
+
+#we filter all words included in the word column in stop_words
+bigrams_filtered <- bigrams_separated %>%
+  filter(!word1 %in% stop_words$word) %>%
+  filter(!word2 %in% stop_words$word) %>%
+  # Filter out rows where word1 or word2 are numbers
+  filter(!grepl("^[0-9]+$", word1)) %>%
+  filter(!grepl("^[0-9]+$", word2))
+
+bigrams_filtered
+```
+
+```{r}
+# bigram counts to see which bigrams are the most common:
+bigram_counts <- bigrams_filtered %>% 
+  count(word1, word2, sort = TRUE)
+
+bigrams_united <- bigrams_filtered %>%
+  unite(bigram, word1, word2, sep = " ") 
+
+bigrams_united |> 
+  count(bigram, sort= TRUE)
+```
+
+Here we see the most used bigrams in the entire campaign from both parties, most of the most used bigrams are expected, names of candidates and variations of these names are at the top. We can also see key topics displayed, for example with the bigram law enforcement, supreme court, social security and middle class.
+
+### Check with trigrams
+
+```{r}
+filtered_speeches %>%
+  unnest_tokens(trigram, text, token = "ngrams", n = 3) %>%
+  filter(!is.na(trigram)) %>%
+  separate(trigram, c("word1", "word2", "word3"), sep = " ") %>%
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word,
+         !word3 %in% stop_words$word, 
+         !grepl("^[0-9]+$", word1), 
+         !grepl("^[0-9]+$", word2), 
+         !grepl("^[0-9]+$", word3)) %>%
+  count(word1, word2, word3, sort = TRUE) %>%
+  unite(trigram, word1, word2, word3, sep = " ")
+```
+
+Similarly we see here that when we check with trigrams, we see unique names at the top and then key topics, for example healthcare with the trigrams affordable care act, pre existing conditions, and late term abortion.
+
+### Conditional n-grams to explore themes
+
+```{r}
+bigrams_filtered %>%
+  filter(word1 == "abortion") %>%
+  count(speaker, word1, word2, sort = TRUE)
+
+bigrams_filtered %>%
+  filter(word1 == "covid") %>%
+  count(speaker, word1, word2, sort = TRUE)
+```
+
+Interestingly if we explore some of the hot topics of the 2020 elections, for example abortion and covid, we see that the Republican candidates seemed to be discussing abortion a lot more in their speeches, while the democrats were discussing COVID much more in their speeches if we look at the bigrams for these two words.
+
+### Combine with TF-IDF
+
+```{r}
+#we use the bigrams united dataframe
+bigram_tf_idf <- bigrams_united %>%
+  #we count by speaker
+  count(speaker, bigram) %>%
+  #we perform tf_idf
+  bind_tf_idf(bigram, speaker, n) %>%
+  #we arrange in descending order
+  arrange(desc(tf_idf))
+
+bigram_tf_idf |> 
+  filter(speaker == "Mike Pence")
+
+bigram_tf_idf |> 
+  filter(speaker == "Donald Trump")
+
+bigram_tf_idf |> 
+  filter(speaker == "Joe Biden")
+
+bigram_tf_idf |> 
+  filter(speaker == "Kamala Harris")
+```
+
+Here we can see the differences in bigrams between the speakers to see how the speeches between speakers differed. Next we can plot the most unique bigrams per each speaker.
+
+```{r}
+bigram_tf_idf %>%
+  group_by(speaker) %>%
+  #
+  slice_max(tf_idf, n = 10) %>%
+  ungroup() %>%
+  ggplot(aes(tf_idf, fct_reorder(bigram, tf_idf), fill = speaker)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~speaker, ncol = 2, scales = "free") +
+  labs(x = "tf-idf", y = NULL)
+```
+
+We see that the difference between especially Pence and Trump is interesting, Trumps unique bigrams contained much more 'controversial' terms, such as sleepy joe, crazy bernie, etc. While Pence is clearly the more traditional and conservative running mate, with terms such as taxpayer funding and supporting law.
+
+### Using n-grams to expand our understanding of the context
+
+```{r}
+#set negation words
+negation_words <- c("not", "no", "never", "without")
+
+#here we find bigrams that are negated somehow using the negation words above
+negated_words <- bigrams_separated %>%
+  filter(word1 %in% negation_words) %>%
+  inner_join(get_sentiments("afinn"), by = c(word2 = "word")) %>%
+  count(word1, word2, value, sort = TRUE)
+
+negated_words
+```
+
+We see that there are as expected many words that are used with negation words thus completely changing the context of the word (a thing to keep in mind when checking out the results for the sentiment analysis).
+
+```{r}
+# Visualize the words following or before negation words
+negated_words %>%
+  # Calculate the contribution of each negated bigram (frequency * sentiment value)
+  mutate(
+    contribution = n * value,  # Create a new column 'contribution' which is the product of 'n' (frequency) and 'value' (sentiment score)
+    sign = if_else(value > 0, "positive", "negative")  # Create a new column 'sign' to label the sentiment as positive or negative based on 'value'
+  ) %>%
+  # Group by the first word of the bigram to find top bigrams with the first word
+  group_by(word1) %>%
+  # Select the top 15 bigrams by the absolute value of their contribution, for each 'word1' group
+  top_n(15, abs(contribution)) %>%
+  # Remove the grouping so that subsequent operations are not affected by it
+  ungroup() %>%
+  # Plot the data with 'word2' on the y-axis ordered within 'word1' by 'contribution', and 'contribution' on the x-axis
+  ggplot(aes(
+    y = reorder_within(word2, contribution, word1),  # Reorder 'word2' within 'word1' based on 'contribution'
+    x = contribution,  # Set 'contribution' as the x-axis
+    fill = sign  # Color bars based on the sign of the sentiment (positive/negative)
+  )) +
+  geom_col() +  # Use a column geometry to create bars
+  scale_y_reordered() +  # Reorder the y-axis based on the 'contribution' within each 'word1' group
+  facet_wrap(~ word1, scales = "free") +  # Create a separate plot for each 'word1' allowing y-axis to vary
+  labs(  # Set the labels for the plot
+    y = 'Words preceded by a negation',  # y-axis label
+    x = "Contribution (Sentiment value * number of mentions)",  # x-axis label
+    title = "Most common positive or negative words to follow negations"  # Title of the plot
+  )
+```
+
+## Correlating pairs of words
+
+Next we want to see if there are words that correlate with each other within a certain speech, this could help us with expanding our understanding of the context of the speeches and thus the campaigns.
+
+```{r}
+# Process speeches to extract individual words
+speech_words <- filtered_speeches %>%
+  unnest_tokens(word, text) %>%  # Tokenize 'text' to separate into individual words
+  filter(!word %in% stop_words$word) %>%  # Remove stop words as defined in the stop_words data frame
+  filter(!grepl("^[0-9]+$", word))   # Remove words that are entirely numeric using a regular expression
+
+# The speech_words data frame now contains the tokenized words from the speeches, without stop words and numeric words
+
+# View the speech_words data frame
+speech_words
+```
+
+```{r}
+# Count word pairs within the title of the speeches
+word_pairs <- speech_words %>%
+  pairwise_count(word, title, sort = TRUE)  # Count all pairs of words that appear together within each title, and sort the result
+
+# The word_pairs data frame now contains the frequency of each pair of words co-occurring within the titles
+
+# View the word_pairs data frame
+word_pairs
+```
+
+This analysis has given us pairs of words and the number of times they have coappeared within one speech. We see a lot of quite unuseful pairs, that are expected in most if not all of the speeches.
+
+We can look into some correlations, but this doesn't give much additional information about the campaigns or speeches other than that they are generally very partiotic and use a lot of diction to support that.
+
+```{r}
+# Filter word pairs for occurrences with the word "america"
+word_pairs %>%
+  filter(item1 == "america")  # Select rows where the first item of the pair is "america"
+```
+
+```{r}
+# Filter word pairs for occurrences with the word "united"
+word_pairs %>%
+  filter(item1 == "united") # Select rows where the first item of the pair is "united"
+```
+
+### Pairwise correlation
+
+When looking at the corpus (thus the campaign season overall), the Phi coefficient measures **how likely it is that two words appear together taking into account the probability for each word of appearing alone**.
+
+```{r}
+word_cors <- speech_words %>%
+  group_by(word) %>%
+  filter(n() >= 20) %>%
+  pairwise_cor(word, title, sort = TRUE)
+
+word_cors |> 
+  filter(correlation != "Inf")
+
+word_cors %>%
+  filter(item1 == "america")
+```
+
+To illustrate our analysis, we can filter by several words and plot it:
+
+```{r}
+word_cors %>%
+  #we define a vector for 4 words
+  filter(item1 %in% c("america", "covid", "guns", "school")) %>%
+  #we group by item1
+  group_by(item1) %>%
+  #we use the first 6 most correlated
+  slice_max(correlation, n = 6) %>%
+  ungroup() %>%
+  #we reorder item2 regarding its correlation
+  mutate(item2 = reorder(item2, correlation)) %>%
+  #we plot
+  ggplot(aes(item2, correlation, fill=item1)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ item1, scales = "free") +
+  coord_flip()
+```
+
+This graph provides a visualization of how certain words (item1, the vector of words) are contextually related to other words (item2) within the total campaign season. The correlated words make sense with each important key topic of the election season. For example its interesting to see one of the most correlated words with guns in the speeches overall was aliens, suggesting that Trump must have been using those 2 words together quite a bit (as it was a unique word for him), suggesting that he was linking immigrants to guns often. The other words in the correlation graph also show that this they must have been used plenty by Trump, as for example sleepy and fake were also used, suggesting that Trumps discussion of guns often involved blaming the Democratic side and accusing people of fake news.
+
+### Plotting correlations in a graph
+
+```{r}
+set.seed(2016)
+
+word_cors %>%
+  filter(correlation > 0.70) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = correlation), show.legend = FALSE) +
+  geom_node_point(color = "lightblue", size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE) +
+  theme_void()
+```
+
+In previous plots we were just seeing bigrams, here we are looking at all words correlations over 0.7 to see how the correlations play out among each other. As expected we see many unique names near each other, also some words that make sense that go together, eg. bear, arms, amendment, and nearby these gun words we also see Mike and Pence and borders, so we see some conservative grouping here clearly.
+
+## Conclusion
+
+Ultimately I didn't come to the analysis with a clear conclusion in mind, but I wanted to explore the makeup of the 2020 Presidential elections. Some interesting notations were made, and the development of sentiment in the campaigns and among individual running candidates was interesting to see. It was also interesting to note the clear differences in textual analysis between Trump and Pence, a difference that didn't exist so much within the Democratic nominees.
+
+It was also interesting to look at the bigrams and word and term frequencies among speakers, they show clear differences and with the TF-IDF analysis we were able to see the differences between speakers clearly in their content that they put forward. Ultimately I thought this was quite interesting, and if I was to continue the analysis I would have done more exploring into the time and dates of speeches given to explore the development of sentiment more and development of term frequencies to see if there had been changes.

@@ -1,0 +1,732 @@
+---
+title: "Data Science II - Assignment"
+output: html_document
+author: Alexandra Salo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Dataset description
+
+## Load packages and data
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(data.table)
+library(ggpubr)
+library(DataExplorer)
+library(dplyr)
+library(corrplot)
+library(glmnet)
+library(caret)
+library(pscl)
+library(MASS)
+library(AER)
+library(magrittr)
+```
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+df<-fread("census_section_stats.csv", sep=";", dec=",", stringsAsFactors = F)
+head(df)
+
+
+
+df <- df %>%
+  as.data.frame() %>%
+  dplyr::select(-centroid, -census_section_code, -geometry)
+
+
+
+
+```
+
+For every census section we have a row in our dataset, here are some of the main columns of the dataset:
+
+\* census_section_code: census_section_code identifier
+
+\* n_pharmacies (target variable 1): number of pharmacies in the census section
+
+\* n_schools (target variable 2): number of schools in the census section
+
+\* n_transport_salespoints: number of transport points of sale.
+
+# Descriptive analysis
+
+## Plots and other interesting figures
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+summary(df)
+
+create_report(df)
+
+#lets highlight the target variables
+plot1 <- ggplot(df, aes(n_schools)) +
+  geom_bar()
+plot2 <- ggplot(df, aes(n_pharmacies)) +
+  geom_bar()
+plot3 <- ggplot(df, aes(n_transport_salespoints)) +
+  geom_bar()
+  
+ggarrange(plot1, plot2, plot3)
+
+data_df_summary <-df |> 
+  summarise_at(vars(n_schools, n_pharmacies, n_transport_salespoints),
+               list(avg=mean, sd=sd, median=median,max=max))
+
+print(data_df_summary)
+
+```
+
+With this descriptive analysis of the dataset, we explore the dataset and see that we have a lot of different variables, with 62 columns. There is no missing data which is good for our analysis. We check the histograms of the variables and I highlighted the histograms of the target variables below the report. We note in the target variables there is quite a bit of 0 inflation, which is important to note for future analysis.
+
+## Relevance of variables
+
+In this section I want to discard variables poorly related to the target variables, so I will plot the correlations of variables and remove the irrelevant ones bit by bit. In the report in the last section, I see that
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#finding stuff correlated
+target_columns <- c("n_schools", "n_pharmacies", "n_transport_salespoints")
+numeric_columns <- sapply(df, is.numeric)
+cor_matrix <- cor(df[target_columns], df[ , numeric_columns], use = "complete.obs")
+corr <- corrplot(cor_matrix, method = "circle", tl.col = "black", tl.srt = 45)
+corr
+
+#then discard the variables that arent correlated, at least all the ethnicity/nationality variables seem to be irrelevant because of the low values shown in corr
+df1 <- df %>%
+  dplyr::select(-c(12:45)) #ethnicities away
+
+#heat map again  
+numeric_columns <- sapply(df1, is.numeric)
+cor_matrix <- cor(df1[target_columns], df1[ , numeric_columns], use = "complete.obs")
+corr <- corrplot(cor_matrix, method = "circle", tl.col = "black", tl.srt = 45)
+
+#discard more irrelevant variables
+df2 <- df1 %>%
+  dplyr::select(-c(1:4, "pcg_age_40_49", "pcg_age_50_59", "pcg_age_60_69", "pcg_num_transaction_norm_city", "altitude", "city_population", "spanish", "foreigners", "family_income", "pcg_expense_home"))
+
+
+#heat map again  
+numeric_columns <- sapply(df2, is.numeric)
+cor_matrix <- cor(df2[target_columns], df2[ , numeric_columns], use = "complete.obs")
+corr <- corrplot(cor_matrix, method = "circle", tl.col = "black", tl.srt = 45)
+
+#find top few correlated variables for each target variable
+cor_matrix
+
+#to check for general colinearity between variables
+DataExplorer::plot_correlation(df2)
+```
+
+Here I filtered out ethnicity variables, and other variables that had little to no relevance on all of the target variables. It seems that one of the target variables (transport salespoints) isn't related much with any of the any variables, so I have to be more sensitive when choosing variables related to that. It seems the most correlated variables are correlated most heavily with the amount of schools.
+
+I also chose to remove some variables that give off the same information. For example there are many measures for population, so I chose to remove the for example the city_population variable and keep population and population_density (which also provides similar information). So lastly we should only have relevant variables for the target variables that are not very similar to other variables included.
+
+Lastly I manually go through the last independent variables that are left to see what the top correlated variables are for each target variable.
+
+For the amount of schools the variables that give the greatest values in magnitude are: population_density (-0.44), population (0.32), pcg_age_0_24 (0.25), ratio_expense_home (-0.22)
+
+For the amount of pharmacies the variables that give the greatest values in magnitude are: n_transport_salespoints (0.2), income_per_capita (0.11), population (0.11)
+
+For the amount of transport salespoints the variables that give the greatest values in magnitude are: n_pharmacies (0.2), pcg_foreigners (0.16), pcg_age_0_24 (0.11).
+
+In the end I check the big correlation heat map to check for colinearity between variables, and note that for example average age and percentage of young people (0-25) are highly correlated and including both of them as an explanatory variable could be irrelevant as it provides a lot of the same information.
+
+# Feature engineering and selection
+
+Here I set out to see if there are any meaningful transformations that can be made to the data. Just to be sure I've exhausted the options, I squared and cubed all the variables left and also included some interaction terms.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+df10 <- df2 |> 
+  mutate(
+    population2 = population^2,
+    population3 = population^3,
+    income_per_capita2 = income_per_capita^2,
+    income_per_capita3 = income_per_capita^3,
+    avg_age2 = avg_age^2,
+    avg_age3 = avg_age^3,
+    pcg_age_0_24_2 = pcg_age_0_24^2,
+    pcg_age_0_24_3 = pcg_age_0_24^3,
+    pcg_age_25_39_2 = pcg_age_25_39^2,
+    pcg_age_25_39_3 = pcg_age_25_39^3,
+    pcg_age_70_y_mas_2 = pcg_age_70_y_mas^2, 
+    pcg_age_70_y_mas_3 = pcg_age_70_y_mas^3,
+    population_density2 = population_density^2,
+    population_density3 = population_density^3,
+    ratio_expense_home2 = ratio_expense_home^2,
+    ratio_expense_home3 = ratio_expense_home^3,
+    pcg_num_transaction_city2 = pcg_num_transaction_city^2,
+    pcg_num_transaction_city3 = pcg_num_transaction_city^3,
+    n_transport_salespoints_2 = n_transport_salespoints^2,
+    n_transport_salespoints_3 = n_transport_salespoints^3,
+    n_schools_2 = n_schools^2,
+    n_schools_3 = n_schools^3,
+    n_pharmacies_2 = n_pharmacies^2,
+    n_pharmacies_3 = n_pharmacies^3,
+    pcg_foreigners2 = pcg_foreigners^2,
+    pcg_foreigners3 = pcg_foreigners^3,
+    pop_popdens = population*population_density,
+    pharm_trans = n_pharmacies*n_transport_salespoints,
+    trans_school = n_transport_salespoints*n_schools,
+    school_pharm = n_schools*n_pharmacies,
+    #log_pcg_foreigners = log(pcg_foreigners) #non-normally distributed so lets try this
+    )
+
+
+df_scaled <- as.data.frame(scale(df10))
+```
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#target variable n_schools
+X <- df_scaled |> 
+  dplyr::select(-n_schools_2, -n_schools_3)
+
+Y<-df_scaled %>% 
+  dplyr::select(n_schools)
+
+modellm<-lm(n_schools ~ .,data=X)
+round(coefficients(modellm),3)
+summary(modellm)
+```
+
+Here I tried many transformations to be done on all the remaining variables, squaring and cubing all of the variables just to see what would happen. Testing it using a linear regression model to see how they end up being in the model and which ones end up being significant. Many variables coefficients show as very close to 0 showing that they don't seem to be very relevant for this assignment in examining n_schools. Next up lets try a different model, lasso regression and do this for all the different target variables to come to a final decision about which variables to keep and which to get rid of before taking them to the regression models.
+
+I decided to keep different sets of variables for each target variable, so I create new data bases including the selected variables to be used later in the training and testing of the different regression models.
+
+## Lasso regression: n_schools
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#target variable: n_schools
+X<-df_scaled %>% 
+  dplyr::select(-c(n_schools, n_schools_2, n_schools_3))
+Y<-df_scaled %>% 
+  dplyr::select(n_schools)
+grid = 10^seq(10, -2, length = 100)
+
+#lasso regression (alpha=1, search for best lambda) and do CV
+model2<-cv.glmnet(x=as.matrix(na.omit(X)), y=Y[,1], lambda=grid, alpha=1)
+
+#example to extract predictions
+predict(model2, newx=as.matrix(X)[1:10,], s="lambda.min")
+
+#example to extract coefficients
+as.data.frame(as.matrix(predict(model2, type="coefficients", s="lambda.min"))) %>% 
+  mutate(across(c(lambda.min), round, 2))
+
+df_n_school <- df10 |> #select all non-0 lambda.min (I didn't include <0.02 because their effect would be so small, except in the case of the percentage of ages, because I feel like those have to be relevant!)
+  dplyr::select(c("n_schools", "population","pcg_age_0_24", "pcg_age_25_39", "population_density", "pcg_num_transaction_city", "n_transport_salespoints", "pcg_age_70_y_mas_3"))
+```
+
+## Lasso regression: n_pharmacies
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#target variable n_pharmacies
+X<-df_scaled %>% 
+  dplyr::select(-c(n_pharmacies, n_pharmacies_2, n_pharmacies_3))
+Y<-df_scaled %>% 
+  dplyr::select(n_pharmacies)
+grid = 10^seq(10, -2, length = 100)
+
+#lasso regression (alpha=1, search for best lambda) and do CV
+model2<-cv.glmnet(x=as.matrix(X), y=Y[,1], lambda=grid, alpha=1)
+
+#example to extract predictions
+predict(model2, newx=as.matrix(X)[1:10,], s="lambda.min")
+
+#example to extract coefficients
+as.data.frame(as.matrix(predict(model2, type="coefficients", s="lambda.min"))) %>% 
+  mutate(across(c(lambda.min), round, 2))
+
+df_n_pharmacies <- df10 |>  #select all non-0 lambda.min (I didn't include <0.02 because their effect would be so small)
+  dplyr::select(c("n_pharmacies", "population", "income_per_capita", "pcg_age_25_39", "pcg_age_70_y_mas", "n_transport_salespoints_2", "n_schools", "pcg_foreigners", "population_density2", "pharm_trans", "pop_popdens" ))
+```
+
+## Lasso regression: n_transport_salespoints
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#target variable n_transport_salespoints
+X<-df_scaled %>% 
+  dplyr::select(-c(n_transport_salespoints, n_transport_salespoints_2, n_transport_salespoints_3))
+Y<-df_scaled %>% 
+  dplyr::select(n_transport_salespoints)
+grid = 10^seq(10, -2, length = 100)
+
+#lasso regression (alpha=1, search for best lambda) and do CV
+model2<-cv.glmnet(x=as.matrix(X), y=Y[,1], lambda=grid, alpha=1)
+
+#example to extract predictions
+predict(model2, newx=as.matrix(X)[1:10,], s="lambda.min")
+
+#example to extract coefficients
+as.data.frame(as.matrix(predict(model2, type="coefficients", s="lambda.min"))) %>% 
+  mutate(across(c(lambda.min), round, 2))
+
+df_n_transport_salespoints <- df10 |> #select all non-0 lambda.min (I didn't include <0.02 because their effect would be so small)
+  dplyr::select(c("n_transport_salespoints", "area", "population", "income_per_capita", "pcg_age_0_24", "pcg_age_25_39", "pcg_age_70_y_mas", "pcg_num_transaction_city", "n_pharmacies", "n_schools", "pcg_foreigners", "pharm_trans"))
+
+```
+
+I chose to do a lasso regression because I knew that I had a lot of variables to discard for each target variable. Lasso regression is good for especially when you have many variables, because it minimizes unnecessary variables to 0. So for each regression I picked out the variables that still had a minimum lambda to be \>0.02 (to remove also variables that only had a slight relevance to the target variable). Then I set new data sets for each target variable that contain the most relevant variables for each target variable.
+
+# Regression models
+
+When starting with the process of finding the best fitting model for each target variable, I wanted to ensure we don't find the model 'by chance', so I employed the splitting of the dataset into the 'training' data and 'testing' data. Then when doing my training and trying to find the best fitting model, I use the training data and ensure my results are accurate by testing it with the testing data set.
+In this entire section, my hypothesis here is using the set of variables that I have pre-selected from the results of the lasso regression, which model is able to most accurately represent the data? And to then choose the best model and evaluate it using the test data. After finding the best model of those tested, I generate a score and my hypothesis moves to be, that I am able to model and predict whether there are enough facilities for each target variable. 
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#split all data sets into train and test data set
+
+#df_n_school: split train and test datasets
+training.samples_s <- df_n_school$n_schools %>% 
+  createDataPartition(p = 0.8, list = FALSE)
+train.data_schools  <- df_n_school[training.samples_s, ]
+test.data_schools <- df_n_school[-training.samples_s, ]
+
+#df_n_pharmacies: split train and test datasets
+training.samples_p <- df_n_pharmacies$n_pharmacies %>% 
+  createDataPartition(p = 0.8, list = FALSE)
+train.data_pharmacies  <- df_n_pharmacies[training.samples_p, ]
+test.data_pharmacies <- df_n_pharmacies[-training.samples_p, ]
+
+#df_n_transportation: split train and test datasets
+training.samples_t <- df_n_transport_salespoints$n_transport_salespoints%>% 
+  createDataPartition(p = 0.8, list = FALSE)
+train.data_transportation  <- df_n_transport_salespoints[training.samples_t, ]
+test.data_transportation <- df_n_transport_salespoints[-training.samples_t, ]
+```
+
+## Target variable 1: n_schools
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#Target variable 1: n_schools, train data
+
+# train linear model
+lm_model <- lm(n_schools ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city  + n_transport_salespoints   + pcg_age_70_y_mas_3  , data = train.data_schools)
+summary(lm_model)
+
+# Train a negative binomial model
+negbin_model <- glm.nb(n_schools ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city  + n_transport_salespoints   + pcg_age_70_y_mas_3, data = train.data_schools)
+
+# Summary of the negative binomial model
+summary(negbin_model)
+
+# Normal Poisson regression model
+poisson_model <- glm(n_schools ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city + n_transport_salespoints + pcg_age_70_y_mas_3, family = poisson(link = "log"), data = train.data_schools)
+
+# Summary of the Poisson regression model
+summary(poisson_model)
+
+# Quasi Poisson regression model
+quasi_poisson_model <- glm(n_schools ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city  + n_transport_salespoints   + pcg_age_70_y_mas_3, family = quasipoisson(link = "log"), data = train.data_schools)
+
+# Summary of the Quasi-Poisson regression model
+summary(quasi_poisson_model)
+
+# Compare models using AIC
+aic_results <- c(AIC(lm_model), AIC(negbin_model), AIC(poisson_model), AIC(quasi_poisson_model))
+
+# Compare models using BIC
+bic_results <- c(BIC(lm_model), BIC(negbin_model), BIC(poisson_model), BIC(quasi_poisson_model))
+
+# Show results
+list(AIC = aic_results, BIC = bic_results)
+
+
+```
+
+The linear model proved to be quite bad as a model, the variables independently prove to be significant, and so does the model itself. However, the low R\^2 value shows us that the model all in all is a bad fit and doesn't explain much of the total variance of the model. The AIC is also quite high.
+
+Then I tried a few other models that might work better for this. I tried the negative binomial model, and while it seemed to perform better than the linear model, it had the lowest AIC of them all, and a Fisher scoring of only 1. I tried out the 2 different poisson models, normal poisson and quasi poisson, they produced quite similar results, however the quasi poisson wasn't able to produce a AIC which makes it difficult to compare as it is an important metric. I also noted that the Fisher scoring in both poissons is much higher than the negative binomial model.
+
+However, I should note that upon testing the relationship between the variance of n_schools and mean of n_schools (like below). We get a value of less than 2, which suggests that I shouldn't be using a negative binomial model in the first place. But since it seems to be performing better than the poisson models, I will choose to keep that model and do a final test on the test data set with this model.
+
+## Model validation
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#relationship of variance and mean
+var(df_n_school$n_schools)/mean(df_n_school$n_schools)
+
+#final test on the negative binomial model
+negbin_model_test_data <- glm.nb(n_schools ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city  + n_transport_salespoints   + pcg_age_70_y_mas_3, data = test.data_schools)
+
+# Summary of the negative binomial model
+summary(negbin_model)
+
+#save plot for later
+# Predicted values using negative binomial model
+negbin_predictions <- predict(negbin_model_test_data, type = "response")
+
+
+```
+
+## Score generation
+
+Then now that I have settled on my final model for the target variable I want to generate a score to evaluate if there are enough schools in a census section. I go about this using the model I have chosen to predict the amount of schools for a census section using the full data set. Then using the prediction I make a score where I take the predicted amount of schools - the real amount of schools in that census section and if that is greater than 0.5 then it is given a score of 1, so there are 'enough' schools. So for example if the prediction is 0.3 and the real amount of schools is 0, this is enough schools, but if the prediction is 0.8 and the real amount of schools is 0, this is not enough and there should be 1 school.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+df_n_school_2 <- df_n_school |> 
+  mutate(predictions = predict(negbin_model,
+                                   newdata = df_n_school,
+                                   type = "response")) |> 
+  mutate(score = case_when(
+    predictions - n_schools > 0.5 ~ 1, 
+    .default = 0
+    )
+  )
+
+logistic_model <- glm(score ~ population + pcg_age_0_24 + pcg_age_25_39 + pcg_num_transaction_city + n_transport_salespoints + pcg_age_70_y_mas_3, 
+                      data = df_n_school_2, 
+                      family = binomial)
+
+# Display a summary of the model
+summary(logistic_model)
+
+#Coefficients for interpretation
+round(exp(coef(logistic_model)),2)
+
+
+# Make predictions
+probabilities <- logistic_model %>% predict(df_n_school_2, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
+# Model accuracy
+mean(predicted.classes == df_n_school_2$score)
+
+
+#confusion matrix
+confusionMatrix(as.factor(df_n_school_2$score), as.factor(predicted.classes))
+```
+
+So above I created the score of if there are enough schools in a census section- 1 = enough and 0 = not enough. Then I conducted a logistic regression based on this to see if this model might accurately be able to predict whether there are enough schools in an area. I calculate the model and find the model accuracy and calculate the confusion matrix. The accuracy stands at very high but not very low either, the confusion matrix shows that it is about equal chances to be predicted a false positive or a true positive (and same for negative). So this regression model does not seem to inspire a lot of confidence, this could be because of the variables chosen early on, or the generated score or the regression model chosen to be used and thus the predictions used.
+
+The coefficients also provide us valuable information, from the exponential coefficients we can say that with every extra percentage point of young people in the census (aged 0-24), the odds of the score being enough (=1) are increased by 344%. We also see an extreme coefficient for the variable used percentage of elderly\^3, the coefficient is 400 000, meaning it would have a huge effect on the likelihood of the score being enough. This makes me doubt the model further as this can't be true.
+
+## Target variable 2: n_pharmacies
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Target variable 1: n_pharmacies, train data
+
+# train linear model
+lm_model <- lm(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans , data = train.data_pharmacies)
+
+# Summary of the linear model
+summary(lm_model)
+
+# Train a negative binomial model
+negbin_model <- glm.nb(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans, data = train.data_pharmacies)
+
+# Summary of the negative binomial model
+summary(negbin_model)
+
+# Fit zero-inflated Poisson model
+zip_model <- zeroinfl(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans | 1, dist = "poisson", data = train.data_pharmacies)
+
+# Summary of the model
+summary(zip_model)
+
+
+# Normal Poisson regression model
+poisson_model <- glm(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans, family = poisson(link = "log"), data = train.data_pharmacies)
+
+# Summary of the Poisson regression model
+summary(poisson_model)
+
+#check for overdispersion
+dispersiontest(poisson_model) #no overdispersion so no need for quasipoisson model
+
+
+#zero inflation poisson model
+zip_model <- zeroinfl(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans| 1, dist = "poisson", data = train.data_pharmacies)
+
+# Summary of the model
+summary(zip_model)
+
+# Compare models using AIC
+aic_results <- c(AIC(lm_model), AIC(negbin_model), AIC(poisson_model),  AIC(quasi_poisson_model),AIC(zip_model))
+
+# Compare models using BIC
+bic_results <- c(BIC(lm_model), BIC(negbin_model), BIC(poisson_model), BIC(quasi_poisson_model), BIC(zip_model))
+
+# Show results
+list(AIC = aic_results, BIC = bic_results)
+```
+
+With the second target variable, I got many confusing results and results that were missing throughout making many of the models hard to compare. In terms of the AIC, all models give similar results, with the range of AICs all being quite close, when trying with different sets of train data I get different results. However of all the models, hypothetically the poisson model should be the best fitting as our range of values for pharmacies is quite small. The poisson model shows quite high values for the fisher scoring (which has me doubting the reliability of the model), however the deviance is close to the degrees of freedom and based on these facts it still seems to be the best fit from the models tested here. So for this reason I will move to testing the test data with this model to ensure that the model upholds these results.
+
+## Model validation
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE) 
+#final test on the negative binomial model
+poisson_model <- glm(n_pharmacies ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans, family = poisson(link = "log"), data = test.data_pharmacies)
+
+# Summary of the Poisson regression model
+summary(poisson_model)
+
+#save plot for later
+# Predicted values using poisson model
+poisson_predictions2 <- predict(poisson_model, type = "response")
+
+```
+
+Now we see with the test data set, we get actually a much better fit, with a very low AIC. This could be because of an uneven cut of the data into test/train data. But nevertheless shows promising results for the model and confirms that this model is the best fit for the data.
+
+## Score generation
+
+Then now that I have settled on my final model for the target variable I want to generate a score to evaluate if there are enough pharmacies in a census section. I go about this using the model I have chosen to predict the amount of pharmacies for a census section using the full data set. Then using the prediction I make a score where I take the predicted amount of pharmacies - the real amount of schools in that census section and if that is greater than 0.5 then it is given a score of 1, so there are 'enough' pharmacies. So for example if the prediction is 0.3 and the real amount of pharmacies is 0, this is enough pharmacies, but if the prediction is 0.8 and the real amount of pharmacies is 0, this is not enough and there should be 1 pharmacies.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+df_n_pharmacies_2 <- df_n_pharmacies |> 
+  mutate(predictions = predict(poisson_model,
+                                   newdata = df_n_pharmacies,
+                                   type = "response")) |> 
+  mutate(score = case_when(
+    predictions - n_pharmacies > 0.5 ~ 1, 
+    .default = 0
+    )
+  )
+
+logistic_model <- glm(score ~ population_density2 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_foreigners + n_transport_salespoints_2 + pharm_trans, 
+                      data = df_n_pharmacies_2, 
+                      family = binomial)
+
+# Display a summary of the model
+summary(logistic_model)
+
+#Coefficients for interpretation
+round(exp(coef(logistic_model)),2)
+
+
+# Make predictions
+probabilities <- logistic_model %>% predict(df_n_pharmacies_2, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
+# Model accuracy
+mean(predicted.classes == df_n_pharmacies_2$score)
+
+
+#confusion matrix
+confusionMatrix(as.factor(df_n_pharmacies_2$score), as.factor(predicted.classes))
+```
+
+So above I created the score of if there are enough pharmacies in a census section- 1 = enough and 0 = not enough. Then I conducted a logistic regression based on this to see if this model might accurately be able to predict whether there are enough pharmacies in an area. I calculate the model and find the model accuracy and calculate the confusion matrix.
+
+The accuracy stands at not very high but not very low either, this one is higher than for the schools. The confusion matrix shows that there are more chances to be predicted a true positive than a false positive. So this regression model does not seem to inspire a lot of confidence, however this one seems to perform better than the logistic regression for schools.
+
+The coefficients also provide us valuable information, according to this model from the exponential coefficients we can say that with every extra percentage point of over 70 year olds, the odds of the score being enough (=1) are decreased by 81%. Most of the coefficients are below 1, except the interaction of the pharmacies and the transport salespoints coefficient. For some of the variables this makes sense but for others it furthers my doubt for the model.
+
+## Target variable 3: n_transport_salespoints
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+#Target variable 3: n_transport_salespoints, train data
+
+# train linear model
+lm_model <- lm(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans , data = train.data_transportation)
+
+# Summary of the linear model
+summary(lm_model)
+
+# Train a negative binomial model
+negbin_model <- glm.nb(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans , data = train.data_transportation)
+
+# Summary of the negative binomial model
+summary(negbin_model)
+
+# Fit zero-inflated Poisson model
+zip_model <- zeroinfl(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans  | 1, dist = "poisson", data = train.data_transportation)
+
+# Summary of the model
+summary(zip_model)
+
+# Normal Poisson regression model
+poisson_model <- glm(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans , family = poisson(link = "log"), data = train.data_transportation)
+
+# Summary of the Poisson regression model
+summary(poisson_model)
+
+#Check for overdispersion
+dispersiontest(poisson_model) #no overdispersion, so no need for quasipoisson
+
+
+#zero inflation poisson model
+zip_model <- zeroinfl(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans | 1, dist = "poisson", data = train.data_transportation)
+
+# Summary of the model
+summary(zip_model)
+
+# Compare models using AIC
+aic_results <- c(AIC(lm_model), AIC(negbin_model), AIC(poisson_model),  AIC(quasi_poisson_model),AIC(zip_model))
+
+# Compare models using BIC
+bic_results <- c(BIC(lm_model), BIC(negbin_model), BIC(poisson_model), BIC(quasi_poisson_model), BIC(zip_model))
+
+# Show results
+list(AIC = aic_results, BIC = bic_results)
+```
+
+With the third target variable, I surprisingly get the lowest AIC values in the linear regression model. Upon further inspection I see that almost all the variables are statistically significant with most significant at alpha= 0.01 even. With the other models having higher AICs (but still lower than the AICs of all the other models tested for other target variables) and quite high fisher scores, I am not completely sold on which model to choose.
+
+Poisson or the zero inflation model should hypothetically be the best fit, since there are such a high number of 0's in the target variable. Since the AIC is still quite low in the poisson model and most of the variables are statistically significant, and the deviance is quite close to the degrees of freedom, I choose to stick with the poisson model.
+
+## Model validation
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+# Normal Poisson regression model- verify with test data
+poisson_model <- glm(n_transport_salespoints ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans , family = poisson(link = "log"), data = test.data_transportation)
+
+# Summary of the Poisson regression model
+summary(poisson_model)
+
+#Check for overdispersion
+dispersiontest(poisson_model)
+
+#save plot for later
+# Predicted values using poisson model
+poisson_predictions3 <- predict(poisson_model, type = "response")
+
+```
+
+Now we see with the test data set, we get good results. There is no overdispersion, and the AIC is even lower than with the training data. With the test data I see that less variables are statistically significant, but this could be because of an uneven fit of the training/ testing data. Score generation
+
+Then now that I have settled on my final model for the target variable I want to generate a score to evaluate if there are enough transport salespoints in a census section. I go about this using the model I have chosen to predict the amount of transport salespoints for a census section using the full data set. Then using the prediction I make a score where I take the predicted amount of transport salespoints - the real amount of transport salespoints in that census section and if that is greater than 0.5 then it is given a score of 1, so there are 'enough' transport salespoints. So for example if the prediction is 0.3 and the real amount of transport salespoints is 0, this is enough transport salespoints, but if the prediction is 0.8 and the real amount of transport salespoints is 0, this is not enough and there should be at least 1 transport salespoint.
+
+## Score generation
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+df_n_transport_2 <- df_n_transport_salespoints |> 
+  mutate(predictions = predict(poisson_model,
+                                   newdata = df_n_transport_salespoints,
+                                   type = "response")) |> 
+  mutate(score = case_when(
+    predictions - n_transport_salespoints > 0.5 ~ 1, 
+    .default = 0
+    )
+  )
+
+logistic_model <- glm(score ~ area + population + income_per_capita + pcg_age_0_24 + pcg_age_25_39 + pcg_age_70_y_mas + pcg_num_transaction_city + pcg_foreigners + n_pharmacies + n_schools+  pharm_trans, 
+                      data = df_n_transport_2, 
+                      family = binomial)
+
+# Display a summary of the model
+summary(logistic_model)
+
+#Coefficients for interpretation
+round(exp(coef(logistic_model)),2)
+
+
+# Make predictions
+probabilities <- logistic_model %>% predict(df_n_transport_2, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "1", "0")
+# Model accuracy
+mean(predicted.classes == df_n_transport_2$score)
+
+
+#confusion matrix
+confusionMatrix(as.factor(df_n_transport_2$score), as.factor(predicted.classes))
+```
+
+So above I created the score of if there are enough transport salespoints in a census section- 1 = enough and 0 = not enough. Then I conducted a logistic regression based on this to see if this model might accurately be able to predict whether there are enough of these salespoints in an area. I calculate the model and find the model accuracy and calculate the confusion matrix.
+
+The accuracy stands at the highest I have seen in this analysis, at almost 1. The confusion matrix that there are very few chances for there to be a false negative or a false positive and most end up in the true negative or true positive grids. So this regression model inspires the most confidence and this seems to be the best fit from them all. The AIC also stands at one of the lowest AICs seen in the entire analysis.
+
+The coefficients also provide us valuable information, according to this model from the exponential coefficients we can say that with every extra percentage point of foreigners in an area, the odds of the score being enough (=1) are increased by 43%. Oddly enough in this model there is also a very high coefficient again for the percentage of elderly people in an area, suggesting that with every percentage point more of elderly people in an area, the odds that there are enough salespoints increases by thousands of percents.
+
+## Which variables are the most highly related to the score? In particular, what makes a census section to have a low number of facilities?
+
+When comparing the scores for each target variable and the logistic regressions made for each of the target variable, they all pinpointed different variables that increased or decreased the odd of there being enough of each type of facility in a certain area. A common theme in all of the results was that the percentage of the amount of elderly people in the area seemed to have an effect (and sometimes very large effect) on the odds of if there were enough facilities (either negatively or positively). So this is something that seems to be very important in this analysis for all target variables. In the first target variable, (the percentage of elderly)\^3 had a very big effect on the score (positively) and so did the percentage of young people in a census section. The percentage of middle aged people draws down the odds of a census section having enough schools. These deductions were done looking at the exponential coefficients of the logistic regression done on the score.
+
+There were not many variables that seemed to be important for all target variables. Again looking at the coefficeints for the logistic regression, for pharmacies the percentage of middle aged people had a great positive effect on the odds of there being enough pharmacies, but the percentage of elderly inhabitants had a negative effect on the odds. This makes sense since usually the elderly may need to go to the pharmacy more, or they may have restricted mobility leading to the need for there to be more pharmacies.
+
+For the transport salespoints we note in the same coefficients that the percentage of elderly has a very big positive effect on the odds of there being enough of this type of facility, to less of an extent the percentage of foreigners also has a positive effect, and things like the area and percentage of young and middle aged people have a slightly negative effect as their exponential coefficients are \<1.
+
+# Result analysis and visualization
+
+To conclude, I was able to analyze the data given here and come to some conclusions that make sense and some that make less sense. Below I plot again the errors of each of my models for each target variable (predictions-actual values) and we see graphs that support my models and the inconsistency that I also found in them.
+
+The schools target variable had the worst fitting model, and this makes sense looking at how there are some very big outliers in the data it seems, resulting in more errors generally that for the other 2 target variables. Similarly in the transport salespoints target variable there are much less outliers in the errors showing a better fit for the model.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+negbin_schools_plot <- plot(abs(test.data_schools$n_schools - negbin_predictions),
+                    xlab = "Observation Index",
+                    ylab = "Absolute Residuals",
+                    main = "Absolute Residuals for Negative Binomial Model")
+
+poisson_pharmacies_plot <- plot(abs(test.data_pharmacies$n_pharmacies - poisson_predictions2), 
+                               xlab = "Observation Index",
+                    ylab = "Absolute Residuals",
+                    main = "Absolute Residuals for Poisson Model")
+
+poisson_transport_plot <- plot(abs(test.data_transportation$n_transport_salespoints -poisson_predictions3),
+                                xlab = "Observation Index",
+                                ylab = "Absolute Residuals",
+                                main = "Absolute Residuals for Poisson Model")
+```
+
+Next I see how the odds of there being enough of each facility change with a change in the number of each type of facility. I visualize this using the logistic regressions done above and each of the target variables and the scores that were assigned above to deem whether there are 'enough' of each type of facility.
+
+In these maps we get quite expectable results, for example in the number of schools example, the less schools you have in a census section, the lower the probability is that there are enough schools in this section. As we go to sections with higher amounts of schools, we see the probabilities converge to 1, so to the probability that there are enough schools being 1. This makes sense, however for this it is important to note that the metric that I used to establish what is 'enough' and what is not, is based on the regression models used earlier in the analysis. It could have also been interesting to evaluate the metric of 'enough' using the population, area or city size as parameters. We see a similar effect with the pharmacies. However with the transport salespoints we see the opposite effect, where the probability goes down as you add more of the places.
+
+Here it may make sense that this happens because the places with the most amount of transport salespoints are big cities with lots of tourists for example that may need these salespoints more than locals.
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+#n_schools logistic regression on the score
+df_n_school_2 %>%
+  mutate(prob = ifelse(score == "0", 1, 0)) %>%
+  ggplot(aes(n_schools , prob)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  labs(
+    title = "Logistic Regression Model", 
+    x = "Amount of schools",
+    y = "Probability of there being 'enough schools'"
+    )
+
+#n_pharmacies logistic regression on the score
+df_n_pharmacies_2 %>%
+  mutate(prob = ifelse(score == "0", 1, 0)) %>%
+  ggplot(aes(n_pharmacies , prob)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  labs(
+    title = "Logistic Regression Model", 
+    x = "Amount of pharmacies",
+    y = "Probability of there being 'enough pharmacies'"
+    )
+
+#n_transport_salespoints logistic regression on the score
+df_n_transport_2 %>%
+  mutate(prob = ifelse(score == "0", 1, 0)) %>%
+  ggplot(aes(n_transport_salespoints , prob)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  labs(
+    title = "Logistic Regression Model", 
+    x = "Amount of transportation salespoints",
+    y = "Probability of there being 'enough salespoints'"
+    )
+```

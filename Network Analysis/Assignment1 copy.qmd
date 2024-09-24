@@ -1,0 +1,253 @@
+---
+title: ""
+format: html
+editor: visual
+---
+
+## Assignment 1- Alexandra Salo 29.4
+
+```{r}
+library(igraph)
+library(tidyr)
+library(visNetwork)
+```
+
+```{r}
+# Read the CSV file into a data frame
+network_edge_list <- read.csv("Homework 1/NetworkofscientificcollaborationsbetweenNewZealandinstitutionsbasedonScopuspublicationsfrom2010to2015/NZ scientific collaboration network/Network edge list.csv")
+
+# Rename 'CollaborationRecord' to 'weight'
+names(network_edge_list)[names(network_edge_list) == "CollaborationRecord"] <- "weight"
+
+# Make sure the collaboration record is numeric
+network_edge_list$weight <- as.numeric(as.character(network_edge_list$weight))
+
+# Create the graph with edge weights
+g <- graph_from_data_frame(network_edge_list, directed = FALSE)
+
+```
+
+Although in this analysis I do not do anything with the class of the institution. I include the classes in a data frame for possible future analyses including the classes.
+
+### 
+1. What is the number of nodes and links?
+
+```{r}
+num_nodes <- vcount(g)
+num_nodes
+num_links <- ecount(g)
+num_links
+```
+
+### 
+2. What is the average degree in the network? And the standard deviation of
+the degree?
+
+```{r}
+degrees <- degree(g)
+average_degree <- mean(degrees)
+average_degree
+sd_degree <- sd(degrees)
+sd_degree
+```
+
+### 
+3. Plot the degree distribution in linear-linear scale and in log-log-scale. What is
+the degree of the most connected node?
+
+```{r}
+# Plot degree distribution on linear scale
+degree_distribution <- degree(g)
+hist(degree_distribution, main = "Degree Distribution", xlab = "Degree", ylab = "Frequency", breaks = "Sturges")
+
+# Plot degree distribution on log-log scale
+# Adding 1 to avoid log(0) for degrees with 0 frequency
+degree_freq <- table(degree_distribution)
+deg <- as.numeric(names(degree_freq))
+freq <- as.numeric(degree_freq)
+plot(log(deg+1), log(freq+1), main = "Log-Log Degree Distribution", xlab = "log(Degree)", ylab = "log(Frequency)", pch = 19)
+
+# Find the degree of the most connected node
+max_degree <- max(degree_distribution)
+most_connected_node <- which.max(degree_distribution)
+
+# The index of the most connected node is given by most_connected_node and its degree is max_degree
+list(max_degree = max_degree, most_connected_node = most_connected_node)
+
+```
+
+The first histogram shows that the majority of nodes (institutions) have a low degree, meaning that most institutions collaborate with only a few others. This suggests that only a small number of institutions have a large number of collaborations.
+
+The second plot shows a downward trend, which likely indicates a scale-free network, also known as networks with a few nodes with many connections (hubs), and many nodes with few connections.
+
+If the plot were a straight line, it would strongly suggest a power-law degree distribution, which is a hallmark of scale-free networks. However, the curvature in the plot suggests that while the network has some properties of scale-free networks, it does not follow a strict power-law distribution.
+
+The max_degree value of 551 indicates that the most connected node, which in this case is the "University of Auckland", has 551 connections. This implies that the University of Auckland has the highest number of collaborative links compared to other institutions in the network.
+
+So, the New Zealand research collaboration network is characterized by a majority of institutions with limited collaborative ties and a few key players with a high number of collaborations. The University of Auckland stands out as the most connected institution, potentially playing a central role in the network's connectivity and flow of information or resources within the research community. This kind of network structure might influence the spread of new scientific ideas or findings, where the hubs could play a significant role in dissemination.
+
+### 
+4. What is the clustering coefficient (transitivity) in the network?
+
+```{r}
+# Calculate the global clustering coefficient, also known as transitivity
+transitivity_g <- transitivity(g, type = "global")
+transitivity_g
+
+```
+
+Transitivity is a measure of the overall likelihood that two nodes with a common neighbor are connected to each other. It provides an indication of the cliquishness of a typical neighborhood in the network. This transitivity value of 0.063 is relatively low, suggesting that the New Zealand research collaboration network is not very "cliquey." This means that if a given institution A collaborates with two other institutions B and C, there's only a 6.33% chance that B and C also collaborate with each other.
+
+### 
+5. What is the assortativity (degree) in the network?
+
+```{r}
+# Assortativity coefficient based on degree
+assortativity_degree <- assortativity_degree(g)
+
+assortativity_degree
+
+```
+
+An assortativity coefficient of -0.336 for the New Zealand research collaboration network suggests that the network tends to connect institutions with dissimilar degrees. In other words, institutions that have many collaborators are more likely to be connected to institutions with fewer collaborators, and vice versa. This pattern is indicative of a disassortative mixing in the network, and further confirms that there are hubs in the network, eg University of Auckland.
+
+### 
+6. Using the Louvain method, does the network have a community structure?
+If so, what is its modularity?
+
+```{r}
+community <- cluster_louvain(g)
+community
+modularity <- modularity(community)
+
+# The modularity of the detected community structure is stored in modularity
+modularity
+```
+
+This indicates that the Louvain algorithm has partitioned the network into 30 different communities. A community in this context is a group of nodes that are more densely connected to each other than to nodes in other communities. We see the output gives the entities included in the first community determined by the algorithm.
+
+In general, modularity scores range from -0.5 to 1, where values closer to 1 indicate strong community structure. A modularity of \~0.26 suggests that the network does have some structure of communities, but it is not extremely strong. This means that there are more edges within communities than would be expected if the edges were distributed at random, but there is still a significant number of edges between communities.
+
+### 
+7. Test that the clustering coefficient in the network cannot be statistically
+explain by a configuration model in which the nodes have the same degree
+as the original.
+
+```{r}
+# Calculate the observed clustering coefficient
+observed_cc <- transitivity(g, type = "global")
+
+# Generate random networks and calculate their clustering coefficients
+num_random_networks <- 1000  # Set the number of random networks
+random_cc <- numeric(num_random_networks)
+
+for (i in 1:num_random_networks) {
+  # Generate a random network with the same degree sequence
+  random_g <- degree.sequence.game(degree(g), method = "vl")
+
+  # Calculate its clustering coefficient
+  random_cc[i] <- transitivity(random_g, type = "global")
+}
+
+# Compare the observed coefficient to the random coefficients
+mean_random_cc <- mean(random_cc)
+sd_random_cc <- sd(random_cc)
+z_score <- (observed_cc - mean_random_cc) / sd_random_cc
+p_value <- 2 * (1 - pnorm(abs(z_score)))
+
+# Print the results
+cat("Observed Clustering Coefficient:", observed_cc, "\n")
+cat("Mean Random Clustering Coefficient:", mean_random_cc, "\n")
+cat("SD of Random Clustering Coefficients:", sd_random_cc, "\n")
+cat("Z-score of Observed Coefficient:", z_score, "\n")
+cat("P-value:", p_value, "\n")
+
+```
+
+The network's clustering coefficient is significantly higher than what would be expected if connections were made randomly between institutions with the same degree sequence. This significant difference suggests that the network has a non-random structure, with a tendency for institutions to form clusters or triads more than would be expected by chance.
+
+This higher-than-random clustering could be due to various factors such as institutional preferences to collaborate with partners with whom they have existing relationships, or tendencies to form research groups or consortia. It suggests a level of organization and community structure within the network that the configuration model does not capture.
+
+### 
+8. Visualize the neighborhood of the node with the largest centrality
+(closeness)
+
+```{r}
+closeness_centralities <- closeness(g)
+node_with_max_closeness <- which.max(closeness_centralities)
+neighborhood <- make_ego_graph(g, order = 2, nodes = node_with_max_closeness)[[1]]
+plot(neighborhood, vertex.size = 5, vertex.label.cex = 0.7)
+
+# Calculate closeness centralities
+closeness_centralities <- closeness(g)
+
+# Find the indices of the five nodes with the highest closeness centrality
+top_closeness_indices <- order(closeness_centralities, decreasing = TRUE)[1:5]
+
+# Initialize an empty list to store the ego graphs
+neighborhoods <- list()
+
+# Create ego graphs for each of the top five nodes
+for (i in top_closeness_indices) {
+  neighborhoods[[i]] <- make_ego_graph(g, order = 1, nodes = i)[[1]]
+}
+
+# Plot the ego graphs all together
+par(mfrow=c(3, 2)) # Adjust the plotting area to a 3x2 grid
+for (i in top_closeness_indices) {
+  plot(neighborhoods[[i]], vertex.size = 5, vertex.label.cex = 0.7, main = paste("Neighborhood of Node", i))
+}
+```
+
+Here we can see the visualizations for the neighborhood of the top 5 nodes with the largest centrality. This shows that the nodes with the highest closeness centrality are only directly connected to one other node, and those directly connected nodes do not have any additional connections themselves.
+
+### Final visualizations
+
+```{r}
+# Basic plot of the graph without labels, more simple
+plot(g, vertex.size = 5, vertex.label = NA, vertex.color = "skyblue", 
+     edge.color = "gray", edge.width = 0.5, 
+     main = "Network Visualization")
+
+# Different layout trial
+layout <- layout_with_kk(g)  # Kamada-Kawai layout
+plot(g, layout = layout, vertex.size = 5, vertex.label = NA, vertex.color = "skyblue", 
+     edge.color = "gray", edge.width = 0.5, 
+     main = "Network Visualization")
+
+# Convert igraph object to visNetwork object and plot interactive map
+vis_g <- visNetwork::visIgraph(g)
+vis_g <- vis_g %>% 
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) %>% 
+  visEdges(smooth = FALSE) %>% 
+  visLayout(randomSeed = 123)  # Setting seed for reproducible layout
+vis_g
+
+```
+
+Next I wanted to show where the most connected nodes were in this visualization.
+
+```{r}
+# Calculate degree of each node
+degree_nodes <- degree(g)
+
+# Find the indices of the five nodes with the highest degree
+top_degree_indices <- order(degree_nodes, decreasing = TRUE)[1:5]
+
+# Set the default color for all nodes to "skyblue"
+vertex_colors <- rep("skyblue", vcount(g))
+
+# Change the color for the five most connected nodes to "red"
+vertex_colors[top_degree_indices] <- "red"
+
+# Now plot the graph with the highlighted nodes
+plot(g, layout = layout, vertex.size = 5, vertex.label = NA, 
+     vertex.color = vertex_colors, edge.color = "gray", 
+     edge.width = 0.5, main = "Network Visualization")
+
+```
+
+Conclusion
+This analysis of the New Zealand scientific collaboration network reveals a structure characterized by a few highly connected institutions, such as the University of Auckland, amidst a broader landscape of more isolated collaborations. The network's degree distribution hints at a scale-free nature but lacks a strict power-law consistency, suggesting the presence of both influential hubs and many institutions with limited collaborative ties. With a low global clustering coefficient and a moderate modularity score from the Louvain method, the network shows modest cliquishness and some community structuring, indicating more interactions within communities than between them. The negative assortativity coefficient further suggests a hierarchical network where prominent, resource-rich institutions often collaborate with less connected entities.
+
+These findings underscore the critical role of central institutions in facilitating scientific collaboration and information flow across the network. They also highlight potential areas for policy intervention, such as encouraging broader and more diverse inter-institutional collaborations to enhance inclusivity and connectivity within the research community. Enhancing these connections could leverage underutilized potential within less connected institutions, fostering a more cohesive and dynamic scientific landscape in New Zealand.

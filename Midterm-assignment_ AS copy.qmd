@@ -1,0 +1,401 @@
+---
+title: "Midterm Assignment / Advanced Modeling"
+format: html
+editor: visual
+---
+
+Midterm Project: feature engineering + unsupervised learning Alexandra Salo 27.2
+
+Load needed libraries
+
+```{r}
+#install.packages("WDI")
+library(tidyverse)
+library(ggplot2)
+library(wbstats)
+library(mice)
+library(DataExplorer)
+library(countrycode)
+library(factoextra)
+library(GGally) # ggplot2-based visualization of correlations
+library(factoextra) # ggplot2-based visualization of pca
+library(rworldmap)
+library(plotly)
+library(cluster)
+library(mclust)
+```
+
+## The Hypothesis
+
+For my assignment I want to analyze what factors are the most important for predicting GDP growth in a country, to be able to analyze this I browsed the available data through the wbstat package and chose 13 relevant variables that I considered to be important to the macroeconomics of a country.
+
+In selecting the countries, I chose all the countries available for the data and chose the year 2018 for the reseacrh year.
+
+```{r}
+#wb_search()
+
+my_indicators = c("gdp_pc" = "NY.GDP.PCAP.KD", 
+                  "gdp_gr" = "NY.GDP.MKTP.KD.ZG", 
+                  "pop" = "SP.POP.TOTL",
+                  "gini" = "SI.POV.GINI",
+                  "unemp" = "SL.UEM.TOTL.NE.ZS", 
+                  "CO2" = "EN.ATM.CO2E.KT",
+                  "math" = "2.0.cov.Math.pl_3.all", 
+                  "agedr" = "SP.POP.DPND", 
+                  "forests" = "AG.LND.FRST.HA", 
+                  "size" = "AG.SRF.TOTL.HA", 
+                  "safe" = "GV.RULE.LW.ES", 
+                  "inflation" = "NY.GDP.DEFL.KD.ZG", 
+                  "a_land" = "AG.LND.AGRI.ZS")
+
+data_new <- wb_data(my_indicators, start_date = 2018)
+
+df <- data_new |> 
+  select(-iso3c)
+
+```
+
+## Descriptive analysis
+
+```{r}
+create_report(df)
+```
+
+I gather a descriptive analysis using the DataExplorer package. In this I note that not many of the variables are normally distributed, and there are a few variables that have high amounts of missing values. I will deal with the missing values here. I move to compute the missing variables using the random forest technique to estimate them. However I note that this may introduce biases, as the missing values are most regularly from lower income countries where their real value may well be lower than what is estimated using this technique, thus introducing a bias.
+
+```{r}
+m = 5 # number of multiple imputations, we are going to make four iterations.
+mice_mod <- mice(df, m=m, method='rf') # replace the missing values with the prediction. 
+X <- complete(mice_mod, action=m) # we have the complete data set
+
+#We need to apply the log to the GDP_gr to see if we can get a more symmetric result
+df$gdp_gr = log(df$gdp_gr)
+df$gdp_pc = log(df$gdp_pc)
+
+m = 5 # number of multiple imputations, we are going to make four iterations.
+mice_mod <- mice(df, m=m, method='rf') # replace the missing values with the prediction. 
+X <- complete(mice_mod, action=m) # we have the complete data set
+
+#check new distributions, they are better!
+create_report(X)
+```
+
+Here I impute the missing values using the random forest method with 5 iterations. I also make some logarithmic transformations to create more symmetry in the distributions which I check again here at the end.
+
+We still see that some variables are quite highly correlated (which we need to look out for), for example population and CO2 emissions (this makes sense) in our descriptive analysis. In order to carry out the Principal Component Analysis, we need to make sure the assumption of linearity is fulfilled. For that I need to check that most variables are more or less linear with each other. I do this by plotting the scatterplots below.
+
+```{r}
+X1 <- X |> 
+  select(-c(iso2c, country, date))
+
+# Calculate correlation matrix
+cor_matrix <- cor(X1, use = "pairwise.complete.obs")
+
+# Get the number of variables
+n_variables <- ncol(X1)
+
+# Iterate through each combination of variables
+for (i in 1:n_variables) {
+  for (j in i:n_variables) {
+    if (i != j) {
+      # Plot scatterplot between variables i and j
+      plot(X1[, i], X1[, j], xlab = names(X1)[i], ylab = names(X1)[j],
+           main = paste("Scatterplot between", names(X1)[i], "and", names(X1)[j]))
+      
+      # Add linear best fitting line
+      abline(lm(X1[, j] ~ X1[, i]), col = "red")
+    }
+  }
+}
+```
+
+After visualizing the scatterplots between the variables, I see that there are quite a few variables that do not fulfill the linear assumption needed to carry out the PCA analysis. So thus I will remove some that seem to be causing most of the issues, and make some transformations to make the relationships more linear. This resulted in me removing the CO2 variable and removing clear outliers for the inflation variable.
+
+```{r}
+X1_linear <- X1 |> 
+  filter(!inflation > 40) |> 
+  select(-CO2) 
+
+# Check linearity again
+# Calculate correlation matrix
+cor_matrix <- cor(X1_linear, use = "pairwise.complete.obs")
+
+# Get the number of variables
+n_variables <- ncol(X1_linear)
+
+# Iterate through each combination of variables
+for (i in 1:n_variables) {
+  for (j in i:n_variables) {
+    if (i != j) {
+      # Plot scatterplot between variables i and j
+      plot(X1_linear[, i], X1_linear[, j], xlab = names(X1_linear)[i], ylab = names(X1_linear)[j],
+           main = paste("Scatterplot between", names(X1_linear)[i], "and", names(X1_linear)[j]))
+      
+      # Add linear best fitting line
+      abline(lm(X1_linear[, j] ~ X1_linear[, i]), col = "red")
+    }
+  }
+}
+
+```
+
+Having done this I do see a bit better linearity in the relationships.
+
+```{r}
+#put all the countries into Continents
+# Create a lookup table to manually assign continents for ambiguous countries
+manual_continents <- c("Channel Islands" = "Europe",
+                       "Kosovo" = "Europe")
+
+# Use ifelse to assign continents based on the lookup table
+X$continent <- ifelse(X[, "country"] %in% names(manual_continents),
+                              manual_continents[X[, "country"]],
+                              countrycode(sourcevar = X[, "country"],
+                                          origin = "country.name",
+                                          destination = "continent",
+                                          nomatch = NA))
+#update this data set to have same transformations
+X <- X |> 
+  filter(!inflation > 40) |> 
+  select(-CO2)
+
+# We just save the names and continents for the graphs
+names=X$country
+continent = X$continent
+
+p=ggplot(X1_linear, aes(x= gdp_gr, y=unemp, size=pop, text=names)) + geom_point(alpha=0.9) + #geom_smooth(se=F, size=0.3) +
+  scale_color_gradient(low="red", high="green") +
+  theme_minimal()+ theme(legend.position="none") + 
+  labs(title = "World countries: GDP growth vs unemployment", subtitle="(size denotes population)",caption="Source: World Bank",
+       x = "GDP growth", y = "Unemployment)")
+
+ggplotly(p, tooltip=c("names"))
+
+```
+
+Here we see that there seems to be a clear trend that the biggest populations are the ones with some of the highest GDP growth rates, and are on the lower side of unemployement rates. But we also see many outliers and no clear linear or symmetric trend in the distribution.
+
+## PCA Analysis
+
+The Principal Components Analysis is an interdependence technique which aims to reduce the data set to a more manageable size while retaining as much of the original information as possible. Since the units of measurement are different for most variables we scale the variables to account for this difference.
+
+```{r}
+pca = prcomp(X1_linear, scale = TRUE)
+summary(pca)
+
+fviz_screeplot(pca, addlabels = TRUE)
+
+fviz_contrib(pca, choice = "var", axes = 1)
+```
+
+With the Principal component analysis we generate a scree plot to visualize the output of the PCA, showing the proportion of variance explained by each principal component. Here we see that principal component number 1 explains 27,6% of the total variance (which is not that much) and the point of inflexion is already at the second principal component. This is where the rate of decrease in explained variance begins to flatten out. This point suggests the optimal number of principal components to retain. Ideally we would like to keep enough principal components to explain at least 75% of the variance of the data, here we should choose either only the 1st principle component (explaining less than 30% of the variance) or the first 7 (capturing 96,6% of the variance).
+
+Thus we can see that the principal component analysis here is not very effective in reducing the data set. This is probably because the data being studied was not extremely linear and didn't have strong relationships among variables.
+
+In the final plot here we see the different absolute contributions of all the variables to the principle component 1. So it represents the importance of each variable in determining the structure of the principal component. Absolute contributions provide insights into the relative importance of variables in explaining the variation captured by the principal component. Variables with higher absolute contributions have a greater influence on the structure of the component, so here we see that gdp per capita and age dependency ratio are the most significant contributors. The dotted line represents the average contribution of the variables, so those 2 variables are above average contributors.
+
+```{r}
+barplot(pca$rotation[,1], las=2, col="darkblue")
+```
+
+This final plot explores the 1st and most significant principal component and its loadings for each variable. Each bar represents the magnitude and direction of the loading of a variable on PC1. Positive loadings indicate a positive association with PC1, while negative loadings indicate a negative association. The length of the bar indicates the strength of the association, with longer bars indicating stronger relationships. Here in this case we see that the strongest relationship is gdp per capita which is negative and age dependency ratio which is positively related.
+
+```{r}
+names[order(pca$x[,1])][1:10]
+names[order(pca$x[,1], decreasing=T)][1:10]
+```
+
+Here we see in the first output it gives these 10 country names that correspond to the countries with the lowest values in the first principal component, indicating that they have the least influence on this component. The second output shows the top 10 countries with the highest influence on the first component. These results dont support my initial hypothesis and has for example Sweden and Bahrain in the same group as not big influencers to the first principal component. However the PC1 was all about gdp per capita and age denedency ratio, so maybe this has something to do with the specific makeup of these nations with those variables specifically in mind. The top countries seem to largely be countries in Africa, which are largely known to have low GDPs per capita but have high birth rates and lots of children to support the older generations, so this makes sense with the first principal component.
+
+Next to check out PC2.
+
+```{r}
+fviz_contrib(pca, choice = "var", axes = 2)
+
+barplot(pca$rotation[,2], las=2, col="darkblue")
+
+names[order(pca$x[,2])][1:10]
+names[order(pca$x[,2], decreasing=T)][1:10]
+```
+
+This next PC is interesting and shows that the most important variables are unemployment and population (clearly) along with the gini coefficient. We see that unemployment has a negative association with the PC2 and population and the ginicoefficient have positive associations, while many variables follow closely behind in magnitude of the association.
+
+The countries shown in the top and bottom of this PC are less clear than the first PC. We see countries from many different regions around the world, but they must have similar situations with relative importance of unemployment and population.
+
+```{r}
+data.frame(z1=pca$x[,1],z2=pca$x[,2]) %>% 
+  ggplot(aes(z1,z2,label=names,color=continent)) + geom_point(size=0) +
+  labs(title="First two principal components (scores)", x="PC1", y="PC2") + #guides(color=guide_legend(title="HDI"))+
+  theme_bw() +theme(legend.position="bottom") + geom_text(size=3, hjust=0.6, vjust=0, check_overlap = TRUE) 
+
+```
+
+```{r}
+data.frame(z1=-pca$x[,1],Region=continent) %>% 
+  group_by(X$continent) %>% 
+  summarise(mean=mean(z1), n=n()) %>% 
+  arrange(desc(mean))
+
+# Map our PCA index in a map:
+map = data.frame(country=names, value=-pca$x[,1])
+#Convert the country code into iso3c using the function countrycode()
+map$country = countrycode(map$country, 'country.name', 'iso3c')
+#Create data object supporting the map
+matched <- joinCountryData2Map(map, joinCode = "ISO3",
+                               nameJoinColumn = "country")
+#Draw the map
+mapCountryData(matched,nameColumnToPlot="value",missingCountryCol = "white",
+               addLegend = FALSE, borderCol = "#C7D9FF",
+               catMethod = "pretty", colourPalette = "terrain",
+               mapTitle = c("PCA1 by Country"), lwd=1)
+```
+
+Interestingly the PCA analysis shows that the Americas and Europe have a very similar mean and have much higher values than the rest of the world, showing a stronger mean of negative values for the first principal component.
+
+Finally we see a map to show how each country is shaded according to the value of the first principal component (PCA1), green colors indicate lower values of the PCA1 score. In the context of this PCA, lower scores might represent certain characteristics or patterns in the data, here the most important variables were GDP per capita and age dependency ratio. The borwn/ red colors then conversely represent higher values of the PCA1 score. The color range mostly goes according to region, which is expected, the Americas and Europe are all mostly green while Africa is mostly yellow/ organge.
+
+## Clustering
+
+Then we move to the next analysis method and aim to make some clusters. We ensure to get the correct variables and we standardize the data as different units have been used.
+
+```{r}
+X2 <- X |> 
+  select(-c(date, country, continent, iso2c)) |> 
+  mutate(pop = log(pop)) #for better symmetry
+
+# Standardize the data
+scaled_X2 <- scale(X2)
+
+#create_report(X2) to check distributions
+
+fit = kmeans(scaled_X2, centers = 6, nstart = 1000)
+
+fit
+```
+
+Here we see the results of running the k-means clustering with 6 clusters on the dataset. We note the difference of sizes of the clusters, eg the first cluster has 57 observations, the second has 43, the third has 38 and we can obtain the mean values for each variable for each cluster.
+
+We also get an idea for the general goodness of fit of a cluster, using the Cluster Sum of Squares. This provides the sum of squared distances of each point within a cluster to the centroid of that cluster. It's a measure of how tightly the observations are clustered around the centroid within each cluster. In this case the given values are quite high actually.
+
+```{r}
+centers=fit$centers
+
+barplot(centers[1,], las=2, col="darkblue")
+barplot(centers[2,], las=2, col="darkblue")
+barplot(centers[3,], las=2, col="darkblue")
+barplot(centers[4,], las=2, col="darkblue")
+barplot(centers[5,], las=2, col="darkblue")
+barplot(centers[6,], las=2, col="darkblue")
+
+
+```
+
+Here we have a visualization of the characteristics of each cluster, specifically the mean values of variables across different clusters. For example in the first cluster we would have countries with an above average gdp per capita but lower than average values for everything else. The second cluster is countries that have alot of arable land and a low index of equality. The third index could be countries with high levels of equality but little arable land and not very big populations, maybe this could include countries like Germany or France? Cluster 5 could be countries with low GDPs, but a high age dependency ratio and arable land and population.
+
+```{r}
+# clusplot
+fviz_cluster(fit, data = scaled_X2, geom = c("point"),ellipse.type = 'norm', pointsize=1)+
+  theme_minimal()+geom_text(label=names,hjust=0, vjust=0,size=2,check_overlap = F)+scale_fill_brewer(palette="Paired")
+```
+
+```{r}
+fviz_nbclust(scaled_X2, kmeans, method = 'wss', k.max = 20, nstart = 1000)
+fviz_nbclust(scaled_X2, kmeans, method = 'silhouette', k.max = 20, nstart = 1000)
+fviz_nbclust(scaled_X2, kmeans, method = 'gap_stat', k.max = 10, nstart = 100, nboot = 500)
+```
+
+Here we do an investigation to figure out what the optimal amount of clusters would be. The first graph shows this using the "within-cluster sum of squares" (WSS) method. It computes the total within-cluster sum of squares for different values of k (number of clusters) and plots the curve. The optimal number of clusters is often chosen as the inflexion point, but in this first plot this isnt so clear, but could be around 7 to 10. In the second plot the silhouette method is used and we see that it suggests 7 clusters as the optimal number of clusters. In the third plot the gap statistic method was used and we see it suggests using 8 clusters.
+
+Since to me it seems like the inflexion point may be more at the point of 7 clusters, I will settle on 7 clusters.
+
+```{r}
+fit.km = kmeans (scaled_X2, centers = 7, nstart = 1000) 
+#nstart is the number of computations
+fit.km
+```
+
+```{r}
+# Select here your favorite clustering tool
+map = data.frame(country=names, value=fit.km$cluster)
+#map = data.frame(country=names, value=fit.kmeans$cluster)
+
+#Convert the country code into iso3c using the function countrycode()
+map$country = countrycode(map$country, 'country.name', 'iso3c')
+#Create data object supporting the map
+matched <- joinCountryData2Map(map, joinCode = "ISO3",
+                               nameJoinColumn = "country")
+#Draw the map
+mapCountryData(matched,nameColumnToPlot="value",missingCountryCol = "white",
+               borderCol = "#C7D9FF",
+               catMethod = "pretty", colourPalette = "rainbow",
+               mapTitle = c("Clusters"), lwd=1)
+```
+
+The map that we see has many regional groupings that make sense, eg. the Nordics and Canada in cluster 1, central Europe grouped in cluster 6 with some interesting countries like Australia and Turkey and India.
+
+I also tried this out with 8 clusters, and the clusters to me seemed more all over the place, which further confirmed that 7 clusters seems to be the ideal amount. Next we move to hierarchical clustering.
+
+```{r}
+# Enter your code here 
+d = dist(scaled_X2, method = "euclidean") 
+hc <- hclust(d, method = "ward.D2") 
+
+hc$labels <- names
+
+fviz_dend(x = hc, 
+          k=7,
+          palette = "jco", 
+          rect = TRUE, rect_fill = TRUE, cex=0.5,
+          rect_border = "jco" )
+
+fviz_dend(x = hc, 
+          k=8,
+          palette = "jco", 
+          rect = TRUE, rect_fill = TRUE, cex=0.5,
+          rect_border = "jco" )
+```
+
+Here we see with this method we can compare the different dendograms if we were to cluster with 7 or 8 clusters. I see thataccording to this maybe 8 clusters could be better, but with the map from earlier I still trust the 7 cluster allocation better.
+
+```{r}
+fviz_dend(x = hc,
+          k = 7,
+          color_labels_by_k = TRUE,
+          cex = 0.8,
+          type = "phylogenic",
+          repel = TRUE)+  labs(title="Economic health tree clustering of the world") + theme(axis.text.x=element_blank(),axis.text.y=element_blank())
+```
+
+Here we can visualize which countries are where better and we see that this clustering seems to make sense generally.
+
+```{r}
+groups.hc = cutree(hc, k = 7)
+
+# Map our PCA index in a map:
+map = data.frame(country=names, value=groups.hc)
+#Convert the country code into iso3c using the function countrycode()
+map$country = countrycode(map$country, 'country.name', 'iso3c')
+#Create data object supporting the map
+matched <- joinCountryData2Map(map, joinCode = "ISO3",
+                               nameJoinColumn = "country")
+#Draw the map
+mapCountryData(matched,nameColumnToPlot="value",missingCountryCol = "white",
+               borderCol = "#C7D9FF",
+               catMethod = "pretty", colourPalette = "rainbow",
+               mapTitle = c("Clusters"), lwd=1)
+```
+
+On the map however I remain confused about how many parts of africa are clustered with central Europe and why Greece is clustered with the Americas and much of Asia.
+
+```{r}
+heatmap(scaled_X2, scale = "none", labRow = names,
+        distfun = function(x){dist(x, method = "euclidean")},
+        hclustfun = function(x){hclust(x, method = "ward.D2")},
+        cexRow = 0.7)
+```
+
+Here we can get a better idea of what variables were the most important in each cluster. With this we can see for example that one cluster with countries such as Jordan and Armenia is clustered due to their high rates of unemployment.
+
+## Conclusions
+
+In this assignment I conducted the PCA analysis and multiple techniques for clustering. With these techniques I was able to group the countries and variables and discover more about their relative importance in the data set. In the PCA analysis, it was noted that the analysis wasn't very useful as it wasn't able to successfully significantly reduce the data set. The most important variables in PC1 were GDP per capita and age dependency ratio, indicating that these factors play a crucial role in explaining the variability in the dataset. But together PC1 was only able to explain around 30% of the variability, so it wasn't very useful. But The combination of PCA and clustering techniques allowed for a comprehensive exploration of the dataset, revealing patterns and structures that provide valuable insights into global socioeconomic dynamics. Further research and refinement of clustering methodologies should enhance the accuracy and granularity of the results, and especially with the PCA analysis more transformations or different variables should have been chosen to get more useful results. But with this exploration we can see which variables have seemed important in the clustering and grouping of countries, and by far it seems that GDP per capita, unemployment and the age dependency ratio have consistently showed themselves as the most influential variables of the dataset in this exploration. So I note that in relations to my inital idea to explore gdp growth, I see that gdp growth had the most influential impact on cluster #2, but otherwise had very low values influencing the other clusters. In the PCA analysis we also noted that gdp growth wasnt one of the most influential variables in the analysis.

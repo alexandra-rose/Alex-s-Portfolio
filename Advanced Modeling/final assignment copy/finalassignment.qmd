@@ -1,0 +1,518 @@
+---
+title: "final assignment, Alexandra Salo"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: inline
+---
+
+## Libraries and cleaning the data
+
+```{r}
+library(caret)
+library(tidyverse)
+library(wbstats)
+library(plotly)
+library(DataExplorer) 
+library(readr)
+library(GGally)
+library(haven)
+library(writexl)
+library(sjlabelled)
+library(corrplot)
+library(dplyr)
+library(gmodels)
+library(scales)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(ggplot2)
+library(leaflet)
+library(MASS)
+library(car)
+library(rpart)
+library(rpart.plot)
+library(lme4)
+library(pROC)
+library(pdp)
+library(Matrix)
+library(lattice)
+library(utils)
+```
+
+Read the data, I chose a dataset that we had used in a course last year about job satisfaction and other variables describing the nature of the employment of a person.
+
+```{r}
+library(readr)
+data <- read_delim("jobsatisf.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+data
+
+#reduce dataset to 
+n <- nrow(data)  # Total number of observations
+sample_size <- floor(0.6 * n)  # Number of observations to keep (5% of total)
+
+# Randomly select the indices of the observations to keep
+indices_to_keep <- sample(n, sample_size)
+
+# Subset the dataset to keep only the selected observations
+data1 <- data[indices_to_keep, ]
+```
+
+```{r}
+# Check the class of all variables in your dataset
+variable_classes <- sapply(data1, class)
+
+# Print the result
+print(variable_classes)
+
+# Check for missing values in your dataset
+missing_values <- colSums(is.na(data1))
+
+# Print the result
+print(missing_values)
+```
+
+Here we check for the classes of each variable and missing data. We have no missing data in any of the variables.
+
+```{r}
+ggcorr(data1, label = T)
+
+create_report(data1)
+
+# Check for variables with only one level
+one_level_variables <- sapply(data1, function(x) length(unique(x)) == 1)
+print(one_level_variables)
+
+# Remove variables with only one level/ no variation
+data1 <- data1 %>%
+  select_if(function(x) length(unique(x)) > 1)
+```
+
+Here we do a descriptive analysis of the dataset, first we check for multicolinearity. We see some colinearity in the dataset generally, and some with the dependent variable jobsatisfaction (jobsat). I also see quite a bit of collinearity in the bottom left corner indicating we may have some multicollinearity between the income and car variables. This makes sense however as they give a lot of the same information, eg. income and income category, car price and car price category. I choose to take out the categorical variables for the car price and income.
+
+Otherwise in the descriptive analysis we don't see a lot of clear outliers or causes for concern. Most variables are not specifically normally distributed. Interestingly we have a very strong peak for the income variable, which gets me interested in this variable and to see how the extremes of this variable affect the target variable.
+
+```{r}
+# Remove uninteresting variables
+
+data1 <- dplyr::select(data1, -inccat, -carcat)
+```
+
+## Predictions using classification models
+
+Applying classification algorithms (e.g., logistic regression, decision trees) to predict being very satisfied in your job.
+
+-   Emphasize interpretation by explaining the relationships between predictors and high job satisfaction.
+
+First we need to define success, in this case satisfaction with work! On a scale from 1-5 we will count 5 as the success. So we will be predicting if job satisfaction == 5, so if a person will have high job satisfaction.
+
+```{r}
+data1$Satisfied = factor(data1$jobsat>4) 
+data1$jobsat = NULL
+
+prop.table(table(data1$Satisfied))
+```
+
+Here we see that the data is not balanced in our favor, there are less TRUEs than there are FALSEs, this is important as it will be harder for us to predict the trues than the falses. Next we need to find the factors that are causing the 19% of people having such high job satisfaction.
+
+Next we split the data, so we can verify our findings on the testing data later using cross validation.
+
+```{r}
+set.seed(123)
+in_train <- createDataPartition(data1$Satisfied, p = 0.8, list = FALSE)  # 70% for training
+training <- data1[ in_train,]
+testing <- data1[-in_train,]
+nrow(training)
+nrow(testing)
+```
+
+## Caret
+
+The control function
+
+We will use 5-fold cross validation:
+
+```{r}
+ctrl <- trainControl(method = "repeatedcv", 
+                     number = 5,
+                     classProbs = T,
+                     summaryFunction=twoClassSummary,
+                     verboseIter = T)
+
+levels(training$Satisfied)=c("No","Yes")
+levels(testing$Satisfied)=c("No","Yes")
+```
+
+## RDA
+
+Here I set up and train a Regularized Discriminant Analysis (RDA) model to predict job satisfaction (Satisfied as a binary response variable). It uses caret for training with a repeated cross-validation method.
+
+```{r}
+# Define a grid for the hyper-parameters
+param_grid = expand.grid(gamma = seq(0, 1, 0.2), lambda = seq(0.1, 0.9, 0.2))
+
+# Train to maximize AUC: metric="ROC"
+ldaFit <- train(Satisfied ~ ., 
+                method ="rda", #name of the model
+                data = training, 
+                tuneGrid = param_grid,
+                preProcess = c("center", "scale"),
+                metric="ROC",
+                trControl = ctrl)
+print(ldaFit)
+
+
+# Predict and validate
+ldaPred = predict(ldaFit, testing)
+confusionMatrix(ldaPred, testing$Satisfied)
+```
+
+```{r}
+threshold = 0.2
+ldaProb = predict(ldaFit, testing, type="prob")
+prediction <- as.factor(ifelse(ldaProb[,2] > threshold, "Yes", "No")) #manual way to predict, instead of using caret we predict by hand. bc caret automatically predicts with 0.5
+#ldaProb[,2] means that prob of pass is 0.8 and prob of fail is 0.2 thats why we want the 2nd column.
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+```
+
+It shows the results of the cross-validation for different combinations of gamma and lambda. The model selects gamma = 1 and lambda = 0.9 as the best parameters based on the ROC value, which measures the ability to distinguish between the two classes. The model achieves an accuracy of 71.37% with a Kappa of 0.1262. This indicates a fair agreement beyond chance. However, the model is better at predicting "No" (No satisfaction) rather than "Yes" (Satisfaction), as seen from the higher positive predictive value (PPV) and sensitivity for the "No" class. Otherwise this model is quite good with a decent accuracy and good balance of sensitivity and specificity.
+
+Then I adjusted the threshold Prediction. You manually adjust the threshold for predicting "Yes" to 0.2, which is lower than the default 0.5. This makes the model predict "Yes" more liberally. With the adjusted threshold, the accuracy slightly decreases to 69%, and Kappa increases marginally to 0.187. It indicates that changing the threshold has a modest impact on the balance between sensitivity and specificity.
+
+## Benchmark Model :
+
+Here I test a logistic regression model (glm) with my binary outcome variable is created using only the intercept (no predictors, Satisfied \~ 1), meaning it's a simple model that predicts the majority class for all observations. This model serves as a baseline to evaluate the performance of more complex models. The predict function is then used to generate probabilities (prob.bench) for the testing set based on this model.
+
+```{r}
+library(pROC)
+
+bench.model = glm(Satisfied ~ 1, family=binomial(link='logit'), data=training)
+prob.bench = predict(bench.model, newdata=testing, type="response")
+
+roc.lda=roc(testing$Satisfied ~ ldaProb[,2])
+roc.bench=roc(testing$Satisfied ~ prob.bench)
+
+plot(roc.lda, col="red",print.thres=TRUE)
+plot(roc.bench, add=TRUE, col='green',print.thres=TRUE)
+legend("bottomright", legend=c("lda", "bench"), col=c("red",  "green"), lwd=2)
+
+roc.lda$auc
+roc.bench$auc
+```
+
+The closer the ROC curve is to the upper left corner, the higher the overall accuracy of the test to correctly classify the positive cases. The AUC (Area Under the Curve) for the "lda" model is labeled as 0.72, which is better than the benchmark model. This suggests that the "lda" model has better discrimination capabilities between the positive and negative cases, however it could be better. The coordinates (0.657, 0.729) represent sensitivity and specificity, respectively, at this threshold.
+
+The "bench" model, on the other hand, has an AUC of 0.5, which is equivalent to a random guess. Its ROC curve is a straight line along the diagonal, which indicates that it has no discriminative power between the positive and negative cases.
+
+```{r}
+threshold = 0.7
+ldaProb = predict(ldaFit, testing, type="prob")
+prediction <- as.factor(ifelse(ldaProb[,2] > threshold, "Yes", "No")) #manual way to predict, instead of using caret we predict by hand. bc caret automatically predicts with 0.5
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+```
+
+Here I test it out with one more threshold and it looks good, better than the last threshold.
+
+### knn
+
+The train function from the caret package is being used, specifying KNN as the method (with method = "kknn"). Data is being preprocessed by scaling and centering (standardizing) the predictors. The tuneLength parameter is set to 10, which means caret will try 10 different values of the number of neighbors to find the best model based on the ROC metric. trControl is a train control object that specifies the cross-validation method, which is not shown in the snippet but is likely set elsewhere in the code.
+
+```{r}
+knnFit <- train(Satisfied ~ ., 
+                  data = training,
+                  method = "kknn",  #now method is KNN 
+                  preProc=c('scale','center'),
+                  tuneLength = 10, #select a greed of 10 expend.grid()
+                
+                  metric="ROC",
+                  trControl = ctrl)
+plot(knnFit)
+
+knnProb = predict(knnFit, testing, type="prob")
+prediction <- as.factor(ifelse(knnProb[,2] > 0.1, "Yes", "No"))
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+
+```
+
+According to the confusion matrix there are only 70 true negatives and 40 true positives, but also a number of false negatives (137). Accuracy: About 43% of the predictions made by the model are correct. This model isn't performing well, especially as the Kappa statistic is only around 0.08
+
+The plot shows the performance of different KNN models with varying numbers of neighbors. The best performance seems to be achieved with about 7 neighbors, as the ROC curve starts to plateau beyond this point (although quite steeply still).
+
+## Decision trees
+
+We create a classification tree to attempt this method of prediction.
+
+```{r}
+library(rpart)
+
+# Hyper-parameters
+control = rpart.control(minsplit = 30, maxdepth = 10, cp=0.01)
+
+# minsplit: minimum number of observations in a node before before a split
+# maxdepth: maximum depth of any node of the final tree
+# cp: degree of complexity, the smaller the more branches
+
+```
+
+The decision tree:
+
+```{r}
+model = Satisfied ~.
+dtFit <- rpart(model, data=training, method = "class", control = control)
+summary(dtFit)
+```
+
+The summary shows:
+
+Two splits have been attempted, with the complexity parameter (CP) indicating how much the relative error needs to increase by at each split to justify keeping that split (in this case 0.01). Variable importance indicates employ is the most significant predictor, followed by empcat and income. The decision tree then makes a primary split on the employ variable, splitting the data into those with employ less than 8 and those with employ greater than or equal to 8 (so having been employed for more or less than 8 months significantly affects if you are very satisfied in your job). This split seems to be the most significant in separating the classes according to the "improve" metric in the summary output.
+
+The subsequent splits and the respective nodes' predicted classes and probabilities suggest how the model is using the predictor variables to classify the data. For instance, the second split is made on employment years being less or more than 15, and then income with the split at 354€.
+
+```{r}
+library(rpart.plot)
+rpart.plot(dtFit, digits=3)
+```
+
+The plot shows the structure of the decision tree, with the split conditions and the percentage of observations in each node. It provides a visual interpretation of how the tree is making its decisions. The tree suggests that the employ variable is the primary splitter for classifying satisfaction, with income as a secondary splitter. The numbers in each node give us the probability of misclassification within that node and the proportion of the total dataset that ends up there.
+
+It is also impoortant to note many nodes have been removed (pruning) in this model, for example employment category (empcat) was removed in the model even though it was deemed important. I want to see how this could look if it was more complete (however I am not confident it will make a better model)
+
+I don't want to make a complete tree since I won't be able to read much of it, so I expand the tree by setting the cp lower to 0.005.
+
+```{r}
+control = rpart.control(minsplit = 8, maxdepth = 12, cp=0.005)
+dtFit <- rpart(model, data=training, method = "class", control = control)
+
+rpart.plot(dtFit, digits = 3)
+# the plot is time consuming
+```
+
+### Prediction:
+
+```{r}
+dtPred <- predict(dtFit, testing, type = "class")
+
+dtProb <- predict(dtFit, testing, type = "prob")
+
+prediction <- as.factor(ifelse(dtProb[,2] > 0.1, "Yes", "No"))
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+
+```
+
+The accuracy is not terribly low at approximately 59%, and the Kappa statistic is at 20%. We see quite a lot of false negatives, which is not dangerous but it seems this is not the best model for our case but we get interesting findings about which variables could be considered important later on.
+
+## Predictions using regression models
+
+Since my target variable is binary and my predictor variables are mostly categorical variables, the type of models done are more limited, and I cannot just do any and all variables as they do not support my types of variables.
+
+## Logistic regression
+
+Because we have binary classification, we can use the standard glm function in R:
+
+```{r}
+logit.model <-  glm(Satisfied ~ . ,data = training, family = binomial)
+                     
+
+#OR HIS code that works with rest of code
+logit.model = glm(Satisfied ~., data = training, family = binomial)
+
+summary(logit.model)
+```
+
+We see a decent level of residual deviance and AIC indicating that this model is not terrible.We also see that only employment category is highly significant along with having your own wireless device which doesn't make much sense.
+
+```{r}
+exp(coef(logit.model))
+```
+
+Here are the exponentiated coefficients from the logistic regression model. These exponentiated coefficients are also known as odds ratios. An odds ratio provides a measure of the association between the predictor and the response variable.
+
+Odds Ratio \> 1: An odds ratio greater than 1 indicates that as the predictor increases, the odds of the outcome occurring increase.
+
+Odds Ratio \< 1: An odds ratio less than 1 suggests that as the predictor increases, the odds of the outcome decrease.
+
+Odds Ratio = 1: An odds ratio of 1 indicates no association between the predictor and the outcome. The odds of the outcome occurring do not change as the predictor changes.
+
+For example, looking at some specific variables:
+
+age: The odds ratio is 0.99431762, suggesting a very slight decrease in the odds of being 'Satisfied' with each additional year of age. marital: With an odds ratio of 0.74013589, there is an indication that changes in marital status are associated with an increase in the odds of being 'Satisfied'. Thus being married decreases your job satisfcation employ: An odds ratio of 1.02186237 means that each additional year of employment is associated with a 2.1% increase in the odds of being 'Satisfied'. empcat: The odds ratio is 2.25050861, suggesting a strong positive relationship between this variable and the odds of being 'Satisfied'.
+
+Moving to predicting with this model.
+
+```{r}
+probability <- predict(logit.model, newdata=testing, type='response')
+head(probability)
+
+prediction <- as.factor(ifelse(probability > 0.5, "Yes", "No"))
+head(prediction)
+```
+
+Performance: confusion matrix
+
+```{r}
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+```
+
+Here in the prediction we actually see quite good behaviour even though the first model didn't seem super amazing. The accuracy is quite high and there is a decent balance in the confusion matrix with very few false negatives and some more false positives.
+
+## Alternative approach to Logistic Regression
+
+Since there were odd variables proving to be significant, I will try the regression by reducing the variables according to my own knowledge and what I have seen in the past models and making some transformations to see if I can capture some possibly non-linear relationships.
+
+```{r}
+logit.model2 <-  glm(Satisfied ~ empcat + car + income + employ + age + marital ,data = training, family = binomial)
+ 
+summary(logit.model2)
+
+logit.model3 <-  glm(Satisfied ~ empcat + car + income + employ + age + marital + (car^2) + log(car) + (income^2) + log(income) + (employ^2) + (age^2) + log(age) ,data = training, family = binomial)
+ 
+summary(logit.model3)
+
+logit.model4 <-  glm(Satisfied ~  car + income + employ + age + marital + (car^2) + log(car) + (income^2) + log(income) + (employ^2) + (age^2) + log(age) + log(empcat) ,data = training, family = binomial)
+ 
+summary(logit.model4)
+```
+
+We see not much of a difference between the models that I tried here. In the first model I tried to rediuce the variables based on what past models have deemed important, however employment category was still the only significant variable.
+
+Then to try to break this cycle I added transformations to many of the variables and then got some interesting variables that popped up and became significant. IN the last one I finally removed the empcat variable to see what would be significant (while also adding the log transformationt for empcat).
+
+As a final improved model I will pick the significant variables from logit.model3 but only choosing one age variable
+
+```{r}
+logit.model3 <-  glm(Satisfied ~ empcat + employ + age ,data = training, family = binomial)
+ 
+summary(logit.model3)
+```
+
+```{r}
+exp(coef(logit.model3))
+
+probability <- predict(logit.model3, newdata=testing, type='response')
+head(probability)
+
+prediction <- as.factor(ifelse(probability > 0.5, "Yes", "No"))
+head(prediction)
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+```
+
+Similarly to before, we see the effect of the change of 1 unit in the predictor in the log odds of someone being highly satisfied in their job. But now with less noise and more concentrated. However we see quite minimal effects on the variables that are not employment category.
+
+## Generalized Additive Models (GAM)
+
+For a more flexible approach than logistic regression, we can use Generalized Additive Models (GAMs) to handle potential non-linear relationships between the predictors and the binary outcome. GAMs allow us to fit a non-linear function to each predictor, providing a more nuanced understanding of their effects.
+
+```{r}
+library(mgcv)
+
+# Fitting a GAM model
+gam.model <- gam(Satisfied ~ factor(empcat) + s(car) + s(income) + s(employ) + s(age) + factor(marital), 
+                 data = training, 
+                 family = binomial)
+summary(gam.model)
+```
+
+The model suggests that empcat (employment category) and employ (employment duration) have some relationship with job satisfaction, with employ having a non-linear effect. The other predictors (car, income, age, marital) are included in the model, but their smooth terms don't provide strong evidence of a non-linear relationship with the log odds of being Satisfied based on their p-values. The R\^2 in this model is extremely low, so this model does not seem to be very efficient for us.
+
+factor(empcat)2: The coefficient of -1.1027 means that being in the second category of the employment category variable is associated with a log odds decrease of 1.1027 for being 'Satisfied' compared to the reference category. In terms of odds ratios, you can exponentiate this coefficient to get the odds ratio: exp(-1.1027) ≈ 0.33. This means that the odds of being 'Satisfied' are about 67% lower for empcat2 compared to the reference group (assuming other variables are held constant).
+
+## Random Forest
+
+```{r}
+rfFit <- train(Satisfied ~ ., 
+                  data = training,
+                  method = "rf",   
+                  preProc=c('scale','center'),
+                  tuneLength = 10,
+                  metric="ROC",
+                  trControl = ctrl)
+plot(rfFit)
+
+rfProb = predict(rfFit, testing, type="prob")
+prediction <- as.factor(ifelse(rfProb[,2] > 0.2, "Yes", "No"))
+
+confusionMatrix(prediction, testing$Satisfied)$table
+confusionMatrix(prediction, testing$Satisfied)$overall[1:2]
+
+```
+
+We see promising results with this model. Accuracy: About 69%, indicating the proportion of total correct predictions (both positives and negatives) among all predictions. Kappa: Around 0.21, a statistic that compares an observed accuracy with an expected accuracy (random chance). A Kappa value closer to 1 indicates strong agreement, while closer to 0 suggests agreement equivalent to random chance. However we still see 56 false negatives and 22 false positives in the predictions indicating a level of uncertainty, however these are some of the best rates we have seen the whole analysis!
+
+Looking at the trend in the plot, it appears that the model's performance (as measured by ROC) decreasesas the number of predictors increases. This could indicate that adding more predictors does not necessarily improve the model; in fact, it might introduce noise or irrelevant information, which could slightly degrade the model's ability to discriminate between the classes. So it seems according to Random Forest model the optimal amount of predictors is 3 or 4.
+
+## Stepwise forward regression
+
+Since I have a binary target variable, linear regressions wouldnt work for me most of the time, but this model should be useful as you can use Akaike Information Criterion (AIC) for a more balanced approach to model selection, considering both the goodness of fit and the simplicity of the model.
+
+```{r}
+library(MASS)
+
+# Define the initial model with only the intercept (no predictors)
+initial_model <- glm(Satisfied ~ 1, data=training, family=binomial)
+
+# Define the full model with all predictors
+full_model <- glm(Satisfied ~ ., data=training, family=binomial)
+
+# Perform stepwise model selection based on AIC
+stepwise_model <- stepAIC(initial_model, scope=list(lower=initial_model, upper=full_model), 
+                          direction="forward")
+
+# Display the summary of the selected model
+summary(stepwise_model)
+```
+
+In summary, this model suggests that empcat, income, and ownfax are significant predictors of being Satisfied, with empcat showing a particularly strong effect. Wireless has a negative association with the outcome, but this effect is not statistically significant at the conventional 0.05 level. The model's AIC suggests it might have a good balance between fit and complexity, and the reduction in deviance from the null to the residual model indicates that the predictors are providing useful information beyond what the intercept alone could provide.
+
+## Neural Networks
+
+```{r}
+library(caret)
+library(nnet)  # For neuralnet if not using caret's method
+
+# Define the tuning grid
+tuneGrid <- expand.grid(size = c(4, 2),  # Number of units in the hidden layer
+                        decay = c(0.1, 0.001))  # Weight decay parameters
+
+
+nn_tune <- train(Satisfied ~ ., 
+                 data = training,
+                 method = "nnet",
+                 preProc = c('scale', 'center'),
+                 trControl = ctrl,
+                 tuneGrid = tuneGrid,
+                 metric = "ROC",
+                 trace = FALSE,
+                 MaxNWts = 10000,
+                 maxit = 200)
+
+predicted <- predict(nn_tune, testing)
+
+postResample(pred = predicted,  obs = testing$Satisfied)
+
+plot(varImp(nn_tune, scale = F), scales = list(y = list(cex = .95)))
+
+partial(nn_tune, pred.var = "empcat", plot = TRUE, rug = TRUE)
+
+```
+
+We see with this model very odd results, however with a quite good accuracy, 0.8! However the variables chosen as the most important are odd and don't seem to make much sense (such as having your own computer). In summary, the neural network model with 2 hidden units and a decay parameter of 0.1 is performing well on the testing set with an accuracy of 80%. However, interpreting variable importance and effects in neural networks requires caution and a good understanding of the model's limitations.
+
+## Conclusion
+
+To conclude, I didn't find a model in either methodology that was very very strong in predicting job satisfaction. The strongest model found was the model trained with the RDA method in the classification models. This model provided quite a strong accuracy however the sensitivity, so the true positive rate was almost perfect (0.89), however the specificity the true negative rate was much lower at 0.33. So ultimately we see that this model over predicts positive values in the prediction for job satisfaction.
+
+In the regression models the logistic regression model was strong, and reducing the amount of variables and including some transformations helped in increasing the accuracy a little bit but not exponentially, so I would prefer the original logistic regression model or the 3rd model in order to not lose valuable information. However, there are quite strong competitors as the neural networks model also had a quite high accuracy of 80%, and so did the stepwise forward regression. However both have very similar levels when comparing other metrics, so the decision between the logistic regression, neural network model and stepwise forward regression is difficult.
+
+Since in this case the interpretability is key and the performance is satisfactory, logistic regression or stepwise regression could be preferred, since the neural network is generally considered a "black box" model, meaning it's difficult to interpret the impact of individual predictors on the outcome. In comparison then since the logistic regression is made for binary target variables I will choose this as the final model.

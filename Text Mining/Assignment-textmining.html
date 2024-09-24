@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>assignment-textmining</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Assignment-textmining_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Assignment-textmining_files/libs/quarto-html/quarto.js"></script>
+<script src="Assignment-textmining_files/libs/quarto-html/popper.min.js"></script>
+<script src="Assignment-textmining_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Assignment-textmining_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Assignment-textmining_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Assignment-textmining_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Assignment-textmining_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Assignment-textmining_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Assignment-textmining_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">assignment-textmining</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="analysis-of-the-speeches-of-joe-biden-and-donald-trump-in-the-2020-elections" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-of-the-speeches-of-joe-biden-and-donald-trump-in-the-2020-elections">Analysis of the speeches of Joe Biden and Donald Trump in the 2020 elections</h2>
+<ul>
+<li><p>The main objective is to tell a story from the text data that makes sense. The notebook should change the recipient’s state of knowledge by providing information about the text without the need for the recipient to have read it.</p></li>
+<li><p>The data may support or disagree with the initial hypothesis. What is important is that the student is able to connect the results with information from the real world.</p></li>
+<li><p>The notebook must combine cells of code with blocks of text explaining the workflow, including headings to structure the document and make it easy to read.&nbsp;</p></li>
+<li><p>The student must use and explain at least 3 techniques learned in class for text processing.</p></li>
+<li><p>All information must be contained&nbsp;<strong>in</strong>&nbsp;the rmd notebook. No attachments or explanatory text documents on the side will be allowed.</p></li>
+<li><p>Only text file for analysis must be provided - if there is one.</p></li>
+<li><p>All code cells must work. Package installation must be included, commented (#) and explained.</p></li>
+<li><p>Non-obvious lines of code must be commented (#)</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidytext)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(wordcloud)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: RColorBrewer</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(widyr)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggraph)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(igraph)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'igraph' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'igraph'
+
+The following objects are masked from 'package:lubridate':
+
+    %--%, union
+
+The following objects are masked from 'package:dplyr':
+
+    as_data_frame, groups, union
+
+The following objects are masked from 'package:purrr':
+
+    compose, simplify
+
+The following object is masked from 'package:tidyr':
+
+    crossing
+
+The following object is masked from 'package:tibble':
+
+    as_data_frame
+
+The following objects are masked from 'package:stats':
+
+    decompose, spectrum
+
+The following object is masked from 'package:base':
+
+    union</code></pre>
+</div>
+</div>
+<p>In my analysis I want to look at the campaign season for the 2020 US Presidential elections, I wanted to see how the speeches interacted amongst themselves and how the analysis differed between time and speakers. For this purpose I obtained a dataset with speeches from the campaign season from Kaggle here: <a href="https://www.kaggle.com/datasets/imuhammad/us-2020-presidential-election-speeches" class="uri">https://www.kaggle.com/datasets/imuhammad/us-2020-presidential-election-speeches</a>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#read my data obtained from Kaggel</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>elections_2020_speeches <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"./us_2020_election_speeches.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 269 Columns: 6
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (6): speaker, title, text, date, location, type
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the data for speeches by Donald Trump, Mike Pence, Joe Biden or Kamala Harris</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>filtered_speeches <span class="ot">&lt;-</span> elections_2020_speeches <span class="sc">%&gt;%</span> </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Donald Trump"</span>, <span class="st">"Mike Pence"</span>, <span class="st">"Joe Biden"</span>, <span class="st">"Kamala Harris"</span>))</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the 'date' column to a Date object (this will be useful later)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>filtered_speeches<span class="sc">$</span>date <span class="ot">&lt;-</span> <span class="fu">mdy</span>(filtered_speeches<span class="sc">$</span>date)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert the speeches into a tidy text format</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>tidy_speeches <span class="ot">&lt;-</span> filtered_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, text, </span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>                <span class="at">drop =</span> F, </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>                <span class="at">strip_punct =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>                <span class="at">to_lower =</span> F) <span class="co"># 'word' is the column name for the tokenized words, and 'text' is the column to be tokenized</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co">#Filter out unneccesary words/ numbers</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>tidy_speeches <span class="ot">&lt;-</span> tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(stop_words) <span class="sc">|&gt;</span> <span class="co">#remove stop words</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word))   <span class="co"># Remove words that are entirely numeric</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Lets check it out</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>tidy_speeches</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 456,756 × 7
+   speaker   title                         text  date       location type  word 
+   &lt;chr&gt;     &lt;chr&gt;                         &lt;chr&gt; &lt;date&gt;     &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;
+ 1 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Joe  
+ 2 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Biden
+ 3 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Hello
+ 4 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Mich…
+ 5 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Hi   
+ 6 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… What…
+ 7 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Sam  
+ 8 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Than…
+ 9 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… I    
+10 Joe Biden Joe Biden Southfield, MI Spe… "Joe… 2020-10-16 Southfi… Camp… Alex…
+# ℹ 456,746 more rows</code></pre>
+</div>
+</div>
+<section id="check-how-many-speeches-there-are-in-each-campaign" class="level3">
+<h3 class="anchored" data-anchor-id="check-how-many-speeches-there-are-in-each-campaign">Check how many speeches there are in each campaign</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Lets check how many speeches were given throughout the campaigns of each person</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>speech_count <span class="ot">&lt;-</span> filtered_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">number_of_speeches =</span> <span class="fu">n_distinct</span>(title))  <span class="co"># Title shows all the unique speeches</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>speech_count</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  speaker       number_of_speeches
+  &lt;chr&gt;                      &lt;int&gt;
+1 Donald Trump                  53
+2 Joe Biden                     71
+3 Kamala Harris                 11
+4 Mike Pence                    19</code></pre>
+</div>
+</div>
+<p>We see that Joe Biden had the most speeches recorded in his campaign (at least according to this dataset). We see Kamala Harris had the least and Donald Trump had about 15 less speeches than Joe Biden. Kamala Harris and Mike Pence had much less speeches than their party front runners.</p>
+</section>
+</section>
+<section id="sentiment-analysis-by-speech" class="level2">
+<h2 class="anchored" data-anchor-id="sentiment-analysis-by-speech">Sentiment analysis by speech</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>speeches_sentiment <span class="ot">&lt;-</span> tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#find the sentiment for each word using bing lexicon</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"bing"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># count the sentiment noted in bing</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(title, date, speaker, sentiment) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we write positive and negative in different columns</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> sentiment, <span class="at">values_from =</span> n, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we substract positive minus negative to find a net sentiment</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sentiment =</span> positive <span class="sc">-</span> negative)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in inner_join(., get_sentiments("bing")): Detected an unexpected many-to-many relationship between `x` and `y`.
+ℹ Row 154444 of `x` matches multiple rows in `y`.
+ℹ Row 415 of `y` matches multiple rows in `x`.
+ℹ If a many-to-many relationship is expected, set `relationship =
+  "many-to-many"` to silence this warning.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>speeches_sentiment</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 154 × 6
+   title                          date       speaker negative positive sentiment
+   &lt;chr&gt;                          &lt;date&gt;     &lt;chr&gt;      &lt;int&gt;    &lt;int&gt;     &lt;int&gt;
+ 1 Cardi B Interviews Joe Biden … 2020-08-17 Joe Bi…       55       65        10
+ 2 Donal Trump Iowa Rally Transc… 2020-01-30 Donald…      289      276       -13
+ 3 Donald Trump 2020 RNC Night 4… 2020-08-27 Donald…      209      227        18
+ 4 Donald Trump 2020 RNC Speech … 2020-08-24 Donald…      137      184        47
+ 5 Donald Trump ABC News Town Ha… 2020-09-16 Donald…      269      179       -90
+ 6 Donald Trump Campaign Rally G… 2020-10-15 Donald…      263      252       -11
+ 7 Donald Trump Campaign Rally S… 2020-10-12 Donald…      194      217        23
+ 8 Donald Trump Campaign Rally S… 2020-09-18 Donald…      372      395        23
+ 9 Donald Trump Campaign Speech … 2020-09-21 Donald…      242      201       -41
+10 Donald Trump Charleston, Sout… 2020-02-28 Donald…      267      255       -12
+# ℹ 144 more rows</code></pre>
+</div>
+</div>
+<p>Here we get the total sentiments per speech, ignoring all the NAs (so all the words that were not included in the bing lexicon).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average sentiment per speech per speaker</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>average_sentiment_speech <span class="ot">&lt;-</span> speeches_sentiment <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker, title) <span class="sc">%&gt;%</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">average_sentiment =</span> <span class="fu">mean</span>(sentiment, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(average_sentiment_speech, <span class="fu">aes</span>(<span class="at">x =</span> speaker, <span class="at">y =</span> average_sentiment, <span class="at">fill =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="fu">position_dodge</span>(), <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Speaker"</span>, <span class="at">y =</span> <span class="st">"Average Sentiment"</span>, <span class="at">title =</span> <span class="st">"Average Sentiment per Speech per Speaker"</span>) <span class="sc">+</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(average_sentiment_speech<span class="sc">$</span>average_sentiment)))  <span class="co"># Set y-axis to start at 0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 82 rows containing missing values (`geom_bar()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Using the bing lexicon, which assigns words to either positive or negative category and summing these counts against each other we see that the average sentiment per speech of the Republican candidates is far higher than the Democratic candidates. At first this difference surprised me, however as I thought avout it more it makes sense since usually Trump speeches are have quite high modality and use quite simple language, Trump often makes great claims about the USA, while Biden’s speeches may be more critical generally of what needs to change and discusses more concretely policy he’d like to enact in his term thus bringing down his sentiment scores.</p>
+<section id="comparison-among-lexicons" class="level3">
+<h3 class="anchored" data-anchor-id="comparison-among-lexicons">Comparison among lexicons</h3>
+<p>I continue the sentiment analysis using the three lexicons, AFINN, Bing and NRC, applied to the speakers, to compare the distribution of sentiment in the race. We approach the sentiment analysis with different lexicons as we note that the lexicons can have biases, so we want to see these through the lenses of different lexicons as well.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co">#AFINN- We need to summarise quantities to get average sentiment.</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>afinn <span class="ot">&lt;-</span> tidy_speeches <span class="sc">|&gt;</span> </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#get the values of the strength and the direction of sentiment of the words, eg. abandon has a negative sentiment value of -2 </span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#group by the speeches</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(title, date) <span class="sc">|&gt;</span> </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we sum up the values given to each word within a speech</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sentiment =</span> <span class="fu">sum</span>(value)) <span class="sc">|&gt;</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we note that we used the AFINN method</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">method =</span> <span class="st">"AFINN"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`
+`summarise()` has grouped output by 'title'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#for Bing and NRC we do it in one step.</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>bing_and_nrc <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#Bing method</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  tidy_speeches <span class="sc">%&gt;%</span> </span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">#we get sentiments from bing</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"bing"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">#we create the column for bing</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">method =</span> <span class="st">"Bing et al."</span>),</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#NRC</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>  tidy_speeches <span class="sc">%&gt;%</span> </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">#we get sentiment from nrc </span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"nrc"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>                 <span class="co">#we filter just sentiment, not emotions</span></span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>                 <span class="fu">filter</span>(sentiment <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"positive"</span>, </span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>                                         <span class="st">"negative"</span>))</span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">#we create the column for nrc</span></span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">method =</span> <span class="st">"NRC"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we divide into speakers</span></span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(method, title, date, speaker, sentiment) <span class="sc">%&gt;%</span></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we write positive and negative in different columns</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> sentiment,</span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> n,</span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb25-25"><a href="#cb25-25" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we extract net sentiment by substraction</span></span>
+<span id="cb25-26"><a href="#cb25-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sentiment =</span> positive <span class="sc">-</span> negative)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in inner_join(., get_sentiments("bing")): Detected an unexpected many-to-many relationship between `x` and `y`.
+ℹ Row 154444 of `x` matches multiple rows in `y`.
+ℹ Row 415 of `y` matches multiple rows in `x`.
+ℹ If a many-to-many relationship is expected, set `relationship =
+  "many-to-many"` to silence this warning.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in inner_join(., get_sentiments("nrc") %&gt;% filter(sentiment %in% : Detected an unexpected many-to-many relationship between `x` and `y`.
+ℹ Row 1103 of `x` matches multiple rows in `y`.
+ℹ Row 417 of `y` matches multiple rows in `x`.
+ℹ If a many-to-many relationship is expected, set `relationship =
+  "many-to-many"` to silence this warning.</code></pre>
+</div>
+</div>
+<p>We now have an estimate of the average speech sentiment (positive - negative) in each speakers speeches for each sentiment lexicon. Let’s look at them:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>afinn</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 154 × 4
+# Groups:   title [154]
+   title                                             date       sentiment method
+   &lt;chr&gt;                                             &lt;date&gt;         &lt;dbl&gt; &lt;chr&gt; 
+ 1 Cardi B Interviews Joe Biden Transcript           2020-08-17        27 AFINN 
+ 2 Donal Trump Iowa Rally Transcript: Trump Holds R… 2020-01-30        10 AFINN 
+ 3 Donald Trump 2020 RNC Night 4 Speech Transcript   2020-08-27        49 AFINN 
+ 4 Donald Trump 2020 RNC Speech Transcript August 24 2020-08-24        88 AFINN 
+ 5 Donald Trump ABC News Town Hall Transcript with … 2020-09-16      -198 AFINN 
+ 6 Donald Trump Campaign Rally Greenville, NC Trans… 2020-10-15        32 AFINN 
+ 7 Donald Trump Campaign Rally Sanford, Florida Tra… 2020-10-12       126 AFINN 
+ 8 Donald Trump Campaign Rally Speech Bemidji, Minn… 2020-09-18       116 AFINN 
+ 9 Donald Trump Campaign Speech Transcript Vandalia… 2020-09-21        20 AFINN 
+10 Donald Trump Charleston, South Carolina Rally Tr… 2020-02-28       -58 AFINN 
+# ℹ 144 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>bing_and_nrc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 308 × 7
+   method      title              date       speaker negative positive sentiment
+   &lt;chr&gt;       &lt;chr&gt;              &lt;date&gt;     &lt;chr&gt;      &lt;int&gt;    &lt;int&gt;     &lt;int&gt;
+ 1 Bing et al. Cardi B Interview… 2020-08-17 Joe Bi…       55       65        10
+ 2 Bing et al. Donal Trump Iowa … 2020-01-30 Donald…      289      276       -13
+ 3 Bing et al. Donald Trump 2020… 2020-08-27 Donald…      209      227        18
+ 4 Bing et al. Donald Trump 2020… 2020-08-24 Donald…      137      184        47
+ 5 Bing et al. Donald Trump ABC … 2020-09-16 Donald…      269      179       -90
+ 6 Bing et al. Donald Trump Camp… 2020-10-15 Donald…      263      252       -11
+ 7 Bing et al. Donald Trump Camp… 2020-10-12 Donald…      194      217        23
+ 8 Bing et al. Donald Trump Camp… 2020-09-18 Donald…      372      395        23
+ 9 Bing et al. Donald Trump Camp… 2020-09-21 Donald…      242      201       -41
+10 Bing et al. Donald Trump Char… 2020-02-28 Donald…      267      255       -12
+# ℹ 298 more rows</code></pre>
+</div>
+</div>
+<p>Then we bind them together and visualize the lexicons distribution of the speeches into ‘positive’ or ‘negative’.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co">#bind the three of them</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(afinn, </span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>          bing_and_nrc) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#make the plot with x=index (chunks), y=sentiment and fill by lexicon (method)</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> sentiment, <span class="at">fill =</span> method)) <span class="sc">+</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>method, <span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date of Speech"</span>, <span class="at">y =</span> <span class="st">"Sentiment"</span>) <span class="sc">+</span>  <span class="co"># Change the x-axis label</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>))  <span class="co"># Rotate the x-axis labels for better readability</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that the bing method is clearly allocating the most evenly between positive and negative words, and for example the NRC lexicon is almost exclusively allocating positive words, while the afinn method has both positive and negative presence, however we see more extreme values both negatively and positively, which makes sense since it gives a strength and a direction of the sentiment for each word.</p>
+<p>From this graph we can also see a general development of the speeches across time, with a clearly more intense time period closer to the election in September- November, with many more speeches with especially generally positive sentiments. In the summer period, we also see a generally more pessimistic time with more negative speeches being given.</p>
+</section>
+<section id="using-the-afinn-lexicon-to-see-the-development-of-average-sentiment-value-for-each-speaker-across-speeches-across-2020." class="level3">
+<h3 class="anchored" data-anchor-id="using-the-afinn-lexicon-to-see-the-development-of-average-sentiment-value-for-each-speaker-across-speeches-across-2020.">Using the AFINN lexicon to see the development of average sentiment value for each speaker across speeches across 2020.</h3>
+<p>Since the afinn method was able to show both negative and positive values, and it provides us with the strength, I decided to use it for this next graph to explore the development of sentiment for each speaker throughout the year.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Join with the sentiment scores from Bing lexicon</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>tidy_speeches_afinn <span class="ot">&lt;-</span> tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="at">by =</span> <span class="st">"word"</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average sentiment per speech per date</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>average_sentiment_by_date <span class="ot">&lt;-</span> tidy_speeches_afinn <span class="sc">%&gt;%</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date, speaker) <span class="sc">%&gt;%</span></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">average_sentiment =</span> <span class="fu">mean</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">'drop'</span>)  <span class="co"># </span></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a time series plot</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(average_sentiment_by_date, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> average_sentiment, <span class="at">color =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>, <span class="at">y =</span> <span class="st">"Average Sentiment"</span>, <span class="at">title =</span> <span class="st">"Average Sentiment of Speeches Over Time"</span>) <span class="sc">+</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that Kamala and Mike seem to join the campaigns with full force after the summer and we see a clear difference in the sentiments of the speeches between Pence and Trump, where Trump remains generally more negative in the later stages of the campaign, Pence’s speeches are much higher in sentiment than Trumps. On the other hand, Harris’ and Biden’s speeches seem to be in the same ball park in terms of sentiment. We also see that it seems that the sentiments of the aspiring presidents seem to follow each other a bit, and follow similar general trends. Lets visualize this relationship below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Join with the sentiment scores from AFINN lexicon</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>tidy_speeches_afinn <span class="ot">&lt;-</span> tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="at">by =</span> <span class="st">"word"</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter for speeches by Trump and Biden</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>tidy_speeches_afinn_filtered <span class="ot">&lt;-</span> tidy_speeches_afinn <span class="sc">%&gt;%</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Donald Trump"</span>, <span class="st">"Joe Biden"</span>))</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the average sentiment per speech per date for Trump and Biden</span></span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>average_sentiment_by_date <span class="ot">&lt;-</span> tidy_speeches_afinn_filtered <span class="sc">%&gt;%</span></span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date, speaker) <span class="sc">%&gt;%</span></span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">average_sentiment =</span> <span class="fu">mean</span>(value, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a time series plot for Trump and Biden</span></span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(average_sentiment_by_date, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> average_sentiment, <span class="at">color =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>, <span class="at">y =</span> <span class="st">"Average Sentiment"</span>, <span class="at">title =</span> <span class="st">"Average Sentiment of Speeches Over Time"</span>) <span class="sc">+</span></span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see generally some similar trends between the two, especially around October we see similar time periods where both aspiring presidents have a peak or a dip. This enforces the idea that the campaigns must have been heavily following each other presences and mimicking and trying to play on the weaknesses of the other candidate, perhaps disussing similar topics around the same time.</p>
+</section>
+<section id="most-negative-speeches" class="level3">
+<h3 class="anchored" data-anchor-id="most-negative-speeches">Most negative speeches</h3>
+<p>Something that is interesting to consider after seeing this graph is which speech was the most negative of Trump and Biden? In other words <strong>which speech has the highest proportion of negative words?</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co">#filter negative words from Bing</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>bingnegative <span class="ot">&lt;-</span> <span class="fu">get_sentiments</span>(<span class="st">"bing"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(sentiment <span class="sc">==</span> <span class="st">"negative"</span>)</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>bingnegative</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,781 × 2
+   word        sentiment
+   &lt;chr&gt;       &lt;chr&gt;    
+ 1 2-faces     negative 
+ 2 abnormal    negative 
+ 3 abolish     negative 
+ 4 abominable  negative 
+ 5 abominably  negative 
+ 6 abominate   negative 
+ 7 abomination negative 
+ 8 abort       negative 
+ 9 aborted     negative 
+10 aborts      negative 
+# ℹ 4,771 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># make a dataframe (wordcounts) with number of words per chapter</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>wordcounts <span class="ot">&lt;-</span> tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker, title) <span class="sc">%&gt;%</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">words =</span> <span class="fu">n</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'speaker'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co">#find the number of negative words by chapter and divide by the total words in chapter</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>tidy_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#semi_join: returns all words in books with a match in bingnegative</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">semi_join</span>(bingnegative) <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#group by book and chapter to summarize how many negative words by chapter</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker, title) <span class="sc">%&gt;%</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">negativewords =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#left_join keeps all words in wordcounts and makes a dataframe</span></span>
+<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(wordcounts, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"speaker"</span>, <span class="st">"title"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#create a column in the dataframe with the ratio</span></span>
+<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ratio =</span> negativewords<span class="sc">/</span>words) <span class="sc">%&gt;%</span></span>
+<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we select the highest ratios</span></span>
+<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(ratio, <span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`
+`summarise()` has grouped output by 'speaker'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  speaker       title                                 negativewords words  ratio
+  &lt;chr&gt;         &lt;chr&gt;                                         &lt;int&gt; &lt;int&gt;  &lt;dbl&gt;
+1 Donald Trump  Donald Trump Denies Reports on John …            45   506 0.0889
+2 Joe Biden     Joe Biden Video Speech Transcript on…            57   597 0.0955
+3 Kamala Harris Kamala Harris Speech Transcript Augu…           105  1082 0.0970
+4 Mike Pence    Mike Pence 2020 RNC Speech Transcript            74  1871 0.0396</code></pre>
+</div>
+</div>
+<p>This makes sense, as all speeches are about quite heavy and negative topics/ themes.</p>
+</section>
+</section>
+<section id="term-frequency-in-the-speeches" class="level2">
+<h2 class="anchored" data-anchor-id="term-frequency-in-the-speeches">Term frequency in the speeches</h2>
+<p>To look at the content of the speeches themselves, we look to the next part of our analysis term frequency and then later TF-IDF.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co">#first we count the words by speaker</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>tidy_words <span class="ot">&lt;-</span> tidy_speeches <span class="sc">|&gt;</span> </span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(speaker, word, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="co">#we get a dataframe with the number of times the word appears in each book</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>tidy_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 32,550 × 3
+   speaker      word       n
+   &lt;chr&gt;        &lt;chr&gt;  &lt;int&gt;
+ 1 Donald Trump I      10779
+ 2 Joe Biden    I       6005
+ 3 Donald Trump Trump   5116
+ 4 Donald Trump And     4337
+ 5 Donald Trump Donald  4258
+ 6 Donald Trump We      3519
+ 7 Joe Biden    Biden   3101
+ 8 Joe Biden    Joe     3066
+ 9 Donald Trump people  2736
+10 Donald Trump They    2675
+# ℹ 32,540 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>total_words <span class="ot">&lt;-</span> tidy_words <span class="sc">%&gt;%</span> </span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we group by books to sum all the totals in the n column of book_words</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker) <span class="sc">%&gt;%</span> </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we create a column called total with the total of words by book</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">total =</span> <span class="fu">sum</span>(n))</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>total_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  speaker        total
+  &lt;chr&gt;          &lt;int&gt;
+1 Donald Trump  229919
+2 Joe Biden     158295
+3 Kamala Harris  23063
+4 Mike Pence     45479</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co">#we add a column with this total number to the dataframe book_words</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>tidy_words <span class="ot">&lt;-</span> <span class="fu">left_join</span>(tidy_words, total_words)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(speaker)`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>tidy_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 32,550 × 4
+   speaker      word       n  total
+   &lt;chr&gt;        &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;
+ 1 Donald Trump I      10779 229919
+ 2 Joe Biden    I       6005 158295
+ 3 Donald Trump Trump   5116 229919
+ 4 Donald Trump And     4337 229919
+ 5 Donald Trump Donald  4258 229919
+ 6 Donald Trump We      3519 229919
+ 7 Joe Biden    Biden   3101 158295
+ 8 Joe Biden    Joe     3066 158295
+ 9 Donald Trump people  2736 229919
+10 Donald Trump They    2675 229919
+# ℹ 32,540 more rows</code></pre>
+</div>
+</div>
+<p>Then we are ready to calculate the term frequency</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>tidy_words <span class="ot">&lt;-</span> tidy_words <span class="sc">%&gt;%</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we add a column for term_frequency in each novel</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">term_frequency =</span> n<span class="sc">/</span>total)</span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>tidy_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 32,550 × 5
+   speaker      word       n  total term_frequency
+   &lt;chr&gt;        &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;          &lt;dbl&gt;
+ 1 Donald Trump I      10779 229919         0.0469
+ 2 Joe Biden    I       6005 158295         0.0379
+ 3 Donald Trump Trump   5116 229919         0.0223
+ 4 Donald Trump And     4337 229919         0.0189
+ 5 Donald Trump Donald  4258 229919         0.0185
+ 6 Donald Trump We      3519 229919         0.0153
+ 7 Joe Biden    Biden   3101 158295         0.0196
+ 8 Joe Biden    Joe     3066 158295         0.0194
+ 9 Donald Trump people  2736 229919         0.0119
+10 Donald Trump They    2675 229919         0.0116
+# ℹ 32,540 more rows</code></pre>
+</div>
+</div>
+<p>To visualize the term requencies I make a plot to see how words are distributed in the whole campaign season.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#we calculate the distribution and put it in the x axis, filling by book</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tidy_words, <span class="fu">aes</span>(term_frequency)) <span class="sc">+</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we create the bars histogram</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">show.legend =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we set the limit for the term frequency in the x axis</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="cn">NA</span>, <span class="fl">0.0009</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 685 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 1 rows containing missing values (`geom_bar()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we can see the term frequencies for words in the entire campaign season. To the left we see how many words are present in each term frequency, so we see that a vast majority of words are used very little in relations to other words by each speaker, and there are very low amounts of words that are used with high frequency among a speaker and their speeches.</p>
+<section id="next-we-can-visualize-distribution-by-speaker" class="level4">
+<h4 class="anchored" data-anchor-id="next-we-can-visualize-distribution-by-speaker">Next we can visualize distribution by speaker</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">#we calculate the distribution and put it in the x axis, filling by book</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tidy_words, <span class="fu">aes</span>(term_frequency, <span class="at">fill =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we create the bars histogram</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">show.legend =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we set the limit for the term frequency in the x axis</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="cn">NA</span>, <span class="fl">0.0002</span>) <span class="sc">+</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#plot settings</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>speaker, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 3493 rows containing non-finite values (`stat_bin()`).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 4 rows containing missing values (`geom_bar()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Most words have very low frequencies (on the left) and a few words have very high frequencies (on the right). However between Trump and Biden we see interesting difference, as it seems like Trumps tail is less descending and more of a jump after the first long bar. Showing that maybe the words he uses frequently he uses more frequently than Biden for example, this could show a more limited vocabulary in Trump for example or a tendency to use words more frequently.</p>
+</section>
+</section>
+<section id="analyzing-the-tf-idf-by-speaker" class="level2">
+<h2 class="anchored" data-anchor-id="analyzing-the-tf-idf-by-speaker">Analyzing the TF-IDF by speaker</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co">#we create a new variable with the analysis</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>speech_tf_idf <span class="ot">&lt;-</span> tidy_words <span class="sc">%&gt;%</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_tf_idf</span>(word, speaker, n)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>speech_tf_idf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 32,550 × 8
+   speaker      word       n  total term_frequency     tf   idf tf_idf
+   &lt;chr&gt;        &lt;chr&gt;  &lt;int&gt;  &lt;int&gt;          &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+ 1 Donald Trump I      10779 229919         0.0469 0.0469     0      0
+ 2 Joe Biden    I       6005 158295         0.0379 0.0379     0      0
+ 3 Donald Trump Trump   5116 229919         0.0223 0.0223     0      0
+ 4 Donald Trump And     4337 229919         0.0189 0.0189     0      0
+ 5 Donald Trump Donald  4258 229919         0.0185 0.0185     0      0
+ 6 Donald Trump We      3519 229919         0.0153 0.0153     0      0
+ 7 Joe Biden    Biden   3101 158295         0.0196 0.0196     0      0
+ 8 Joe Biden    Joe     3066 158295         0.0194 0.0194     0      0
+ 9 Donald Trump people  2736 229919         0.0119 0.0119     0      0
+10 Donald Trump They    2675 229919         0.0116 0.0116     0      0
+# ℹ 32,540 more rows</code></pre>
+</div>
+</div>
+<p>These first words in the dataframe have very low TF-IDF, near zero, because these are words that occur in many of the speeches across different speakers.</p>
+<section id="higher-tf-idf-words" class="level4">
+<h4 class="anchored" data-anchor-id="higher-tf-idf-words">Higher TF-IDF words</h4>
+<p>The more documents containing the word, the less distinctive it is of any of them, so the TF-IDF score will be higher for words that occur fewer times. The TF-IDF analysis rewards these words.</p>
+<p>To check this, we just have to arrange the dataframe by tf-idf:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>desc <span class="ot">&lt;-</span> speech_tf_idf <span class="sc">%&gt;%</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we exclude the total column which is not necessary now</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>total) <span class="sc">%&gt;%</span></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we arrange by tf-idf in descending order</span></span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(tf_idf)) </span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>desc <span class="sc">|&gt;</span> </span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Joe Biden"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12,215 × 7
+   speaker   word         n term_frequency       tf   idf   tf_idf
+   &lt;chr&gt;     &lt;chr&gt;    &lt;int&gt;          &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+ 1 Joe Biden Muslim      98       0.000619 0.000619 1.39  0.000858
+ 2 Joe Biden Joey        54       0.000341 0.000341 1.39  0.000473
+ 3 Joe Biden Shanrika    53       0.000335 0.000335 1.39  0.000464
+ 4 Joe Biden Awad        48       0.000303 0.000303 1.39  0.000420
+ 5 Joe Biden Garcia      47       0.000297 0.000297 1.39  0.000412
+ 6 Joe Biden Enrique     45       0.000284 0.000284 1.39  0.000394
+ 7 Joe Biden vehicles    42       0.000265 0.000265 1.39  0.000368
+ 8 Joe Biden Nelson      41       0.000259 0.000259 1.39  0.000359
+ 9 Joe Biden Nihad       39       0.000246 0.000246 1.39  0.000342
+10 Joe Biden Scranton    77       0.000486 0.000486 0.693 0.000337
+# ℹ 12,205 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>desc <span class="sc">|&gt;</span> </span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Donald Trump"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11,335 × 7
+   speaker      word         n term_frequency       tf   idf   tf_idf
+   &lt;chr&gt;        &lt;chr&gt;    &lt;int&gt;          &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+ 1 Donald Trump fake       275       0.00120  0.00120  1.39  0.00166 
+ 2 Donald Trump hell       312       0.00136  0.00136  0.693 0.000941
+ 3 Donald Trump crazy      268       0.00117  0.00117  0.693 0.000808
+ 4 Donald Trump J          479       0.00208  0.00208  0.288 0.000599
+ 5 Donald Trump Sleepy      98       0.000426 0.000426 1.39  0.000591
+ 6 Donald Trump USA        454       0.00197  0.00197  0.288 0.000568
+ 7 Donald Trump Savannah   188       0.000818 0.000818 0.693 0.000567
+ 8 Donald Trump sleepy      94       0.000409 0.000409 1.39  0.000567
+ 9 Donald Trump aliens      87       0.000378 0.000378 1.39  0.000525
+10 Donald Trump Wallace    154       0.000670 0.000670 0.693 0.000464
+# ℹ 11,325 more rows</code></pre>
+</div>
+</div>
+<p>Here we see some differences in the term frequencies among the different speakers, we see for example some words that make sense for Trump. He uses the word sleepy with much more frequency than the other speakers, most likely referencing how he calls Joe Biden ‘sleepy Joe’. We also see words such as fake (most likely referring to other people, news, or policies) and the word aliens (likely referring to immigrants). Bidens words that were unique to his speeches were more calm, with mostly unique names and words such as undocumented which were not used by other candidates. Below we can see these most unique words per speaker visualized.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>speech_tf_idf <span class="sc">%&gt;%</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker) <span class="sc">%&gt;%</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#choose maximum number of words</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(tf_idf, <span class="at">n =</span> <span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(tf_idf, <span class="fu">fct_reorder</span>(word, tf_idf), <span class="at">fill =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>speaker, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"tf-idf"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="n-grams-and-relationships-between-words-in-the-speeches" class="level1">
+<h1>N-grams and relationships between words in the speeches</h1>
+<p>The last analysis was interesting, but it left me with some unanswered questions and I would benefit from more context in the analysis of the more and less frequent words. So using bigrams and trigrams are a great way to expand the analysis to include more context.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>speech_bigrams <span class="ot">&lt;-</span> filtered_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we take the text in austen_books, and tokenize it to sequences of 2 words</span></span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(bigram, text, <span class="at">token =</span> <span class="st">"ngrams"</span>, <span class="at">n =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we filter all N/A outputs</span></span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(bigram))</span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>speech_bigrams</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,072,170 × 6
+   speaker   title                              date       location type  bigram
+   &lt;chr&gt;     &lt;chr&gt;                              &lt;date&gt;     &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; 
+ 1 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… joe b…
+ 2 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… biden…
+ 3 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… 00 00 
+ 4 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… 00 he…
+ 5 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… hello…
+ 6 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… michi…
+ 7 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… hi how
+ 8 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… how a…
+ 9 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… are y…
+10 Joe Biden Joe Biden Southfield, MI Speech o… 2020-10-16 Southfi… Camp… you w…
+# ℹ 1,072,160 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>bigrams_separated <span class="ot">&lt;-</span> speech_bigrams <span class="sc">%&gt;%</span></span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we separate each bigram in two columns, word1 and word2</span></span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(bigram, <span class="fu">c</span>(<span class="st">"word1"</span>, <span class="st">"word2"</span>), <span class="at">sep =</span> <span class="st">" "</span>)</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a><span class="co">#we filter all words included in the word column in stop_words</span></span>
+<span id="cb71-7"><a href="#cb71-7" aria-hidden="true" tabindex="-1"></a>bigrams_filtered <span class="ot">&lt;-</span> bigrams_separated <span class="sc">%&gt;%</span></span>
+<span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>word1 <span class="sc">%in%</span> stop_words<span class="sc">$</span>word) <span class="sc">%&gt;%</span></span>
+<span id="cb71-9"><a href="#cb71-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>word2 <span class="sc">%in%</span> stop_words<span class="sc">$</span>word) <span class="sc">%&gt;%</span></span>
+<span id="cb71-10"><a href="#cb71-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter out rows where word1 or word2 are numbers</span></span>
+<span id="cb71-11"><a href="#cb71-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word1)) <span class="sc">%&gt;%</span></span>
+<span id="cb71-12"><a href="#cb71-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word2))</span>
+<span id="cb71-13"><a href="#cb71-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb71-14"><a href="#cb71-14" aria-hidden="true" tabindex="-1"></a>bigrams_filtered</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 126,159 × 7
+   speaker   title                         date       location type  word1 word2
+   &lt;chr&gt;     &lt;chr&gt;                         &lt;date&gt;     &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
+ 1 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… joe   biden
+ 2 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… time  tell…
+ 3 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… story it’s 
+ 4 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… awful lot  
+ 5 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… folks it’s 
+ 6 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… joe   biden
+ 7 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… gret… whit…
+ 8 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… whit… that…
+ 9 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… i’ve  met  
+10 Joe Biden Joe Biden Southfield, MI Spe… 2020-10-16 Southfi… Camp… met   virt…
+# ℹ 126,149 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="co"># bigram counts to see which bigrams are the most common:</span></span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>bigram_counts <span class="ot">&lt;-</span> bigrams_filtered <span class="sc">%&gt;%</span> </span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word1, word2, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>bigrams_united <span class="ot">&lt;-</span> bigrams_filtered <span class="sc">%&gt;%</span></span>
+<span id="cb73-6"><a href="#cb73-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(bigram, word1, word2, <span class="at">sep =</span> <span class="st">" "</span>) </span>
+<span id="cb73-7"><a href="#cb73-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb73-8"><a href="#cb73-8" aria-hidden="true" tabindex="-1"></a>bigrams_united <span class="sc">|&gt;</span> </span>
+<span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(bigram, <span class="at">sort=</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 56,558 × 2
+   bigram               n
+   &lt;chr&gt;            &lt;int&gt;
+ 1 donald trump      4316
+ 2 joe biden         3683
+ 3 vice president    1144
+ 4 president donald  1040
+ 5 mike pence         870
+ 6 president trump    809
+ 7 kamala harris      441
+ 8 law enforcement    426
+ 9 american people    396
+10 usa usa            376
+# ℹ 56,548 more rows</code></pre>
+</div>
+</div>
+<p>Here we see the most used bigrams in the entire campaign from both parties, most of the most used bigrams are expected, names of candidates and variations of these names are at the top. We can also see key topics displayed, for example with the bigram law enforcement, supreme court, social security and middle class.</p>
+<section id="check-with-trigrams" class="level3">
+<h3 class="anchored" data-anchor-id="check-with-trigrams">Check with trigrams</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>filtered_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(trigram, text, <span class="at">token =</span> <span class="st">"ngrams"</span>, <span class="at">n =</span> <span class="dv">3</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(trigram)) <span class="sc">%&gt;%</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate</span>(trigram, <span class="fu">c</span>(<span class="st">"word1"</span>, <span class="st">"word2"</span>, <span class="st">"word3"</span>), <span class="at">sep =</span> <span class="st">" "</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>word1 <span class="sc">%in%</span> stop_words<span class="sc">$</span>word,</span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span>word2 <span class="sc">%in%</span> stop_words<span class="sc">$</span>word,</span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span>word3 <span class="sc">%in%</span> stop_words<span class="sc">$</span>word, </span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word1), </span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word2), </span>
+<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word3)) <span class="sc">%&gt;%</span></span>
+<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word1, word2, word3, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unite</span>(trigram, word1, word2, word3, <span class="at">sep =</span> <span class="st">" "</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 31,069 × 2
+   trigram                    n
+   &lt;chr&gt;                  &lt;int&gt;
+ 1 president donald trump   750
+ 2 president mike pence     342
+ 3 vice president mike      341
+ 4 usa usa usa              319
+ 5 president joe biden      210
+ 6 vice president joe       182
+ 7 senator kamala harris    116
+ 8 vice president biden     106
+ 9 affordable care act       75
+10 world war ii              60
+# ℹ 31,059 more rows</code></pre>
+</div>
+</div>
+<p>Similarly we see here that when we check with trigrams, we see unique names at the top and then key topics, for example healthcare with the trigrams affordable care act, pre existing conditions, and late term abortion.</p>
+</section>
+<section id="conditional-n-grams-to-explore-themes" class="level3">
+<h3 class="anchored" data-anchor-id="conditional-n-grams-to-explore-themes">Conditional n-grams to explore themes</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>bigrams_filtered <span class="sc">%&gt;%</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(word1 <span class="sc">==</span> <span class="st">"abortion"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(speaker, word1, word2, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 4
+   speaker      word1    word2         n
+   &lt;chr&gt;        &lt;chr&gt;    &lt;chr&gt;     &lt;int&gt;
+ 1 Donald Trump abortion socialism     8
+ 2 Donald Trump abortion ripping       7
+ 3 Mike Pence   abortion rights        5
+ 4 Donald Trump abortion that’s        3
+ 5 Mike Pence   abortion provider      3
+ 6 Donald Trump abortion donald        2
+ 7 Donald Trump abortion banned        1
+ 8 Donald Trump abortion biden’s       1
+ 9 Donald Trump abortion extreme       1
+10 Donald Trump abortion shut          1
+11 Mike Pence   abortion abroad        1
+12 Mike Pence   abortion clinic        1
+13 Mike Pence   abortion defund        1
+14 Mike Pence   abortion taxpayer      1
+15 Mike Pence   abortion that’s        1
+16 Mike Pence   abortion wasn’t        1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>bigrams_filtered <span class="sc">%&gt;%</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(word1 <span class="sc">==</span> <span class="st">"covid"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(speaker, word1, word2, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 72 × 4
+   speaker      word1 word2         n
+   &lt;chr&gt;        &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;
+ 1 Joe Biden    covid crisis       16
+ 2 Joe Biden    covid virus         7
+ 3 Joe Biden    covid joe           6
+ 4 Donald Trump covid president     3
+ 5 Joe Biden    covid deaths        3
+ 6 Joe Biden    covid relief        3
+ 7 Joe Biden    covid test          3
+ 8 Joe Biden    covid testing       3
+ 9 Donald Trump covid donald        2
+10 Donald Trump covid hit           2
+# ℹ 62 more rows</code></pre>
+</div>
+</div>
+<p>Interestingly if we explore some of the hot topics of the 2020 elections, for example abortion and covid, we see that the Republican candidates seemed to be discussing abortion a lot more in their speeches, while the democrats were discussing COVID much more in their speeches if we look at the bigrams for these two words.</p>
+</section>
+<section id="combine-with-tf-idf" class="level3">
+<h3 class="anchored" data-anchor-id="combine-with-tf-idf">Combine with TF-IDF</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co">#we use the bigrams united dataframe</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="ot">&lt;-</span> bigrams_united <span class="sc">%&gt;%</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we count by speaker</span></span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(speaker, bigram) <span class="sc">%&gt;%</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we perform tf_idf</span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_tf_idf</span>(bigram, speaker, n) <span class="sc">%&gt;%</span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we arrange in descending order</span></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(tf_idf))</span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="sc">|&gt;</span> </span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Mike Pence"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,633 × 6
+   speaker    bigram                 n      tf   idf  tf_idf
+   &lt;chr&gt;      &lt;chr&gt;              &lt;int&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Mike Pence mike pence           824 0.0564  0.288 0.0162 
+ 2 Mike Pence president mike       331 0.0227  0.693 0.0157 
+ 3 Mike Pence president donald     312 0.0214  0.288 0.00615
+ 4 Mike Pence taxpayer funding      26 0.00178 1.39  0.00247
+ 5 Mike Pence usa usa               51 0.00349 0.693 0.00242
+ 6 Mike Pence supporting law        24 0.00164 1.39  0.00228
+ 7 Mike Pence unleashed american    24 0.00164 1.39  0.00228
+ 8 Mike Pence challenging times     23 0.00158 1.39  0.00218
+ 9 Mike Pence daniel garza          23 0.00158 1.39  0.00218
+10 Mike Pence federal red           23 0.00158 1.39  0.00218
+# ℹ 5,623 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="sc">|&gt;</span> </span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Donald Trump"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 27,455 × 6
+   speaker      bigram               n       tf   idf  tf_idf
+   &lt;chr&gt;        &lt;chr&gt;            &lt;int&gt;    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Donald Trump fake news          191 0.00315  1.39  0.00437
+ 2 Donald Trump sleepy joe         173 0.00286  1.39  0.00396
+ 3 Donald Trump usa usa            325 0.00537  0.693 0.00372
+ 4 Donald Trump president donald   725 0.0120   0.288 0.00344
+ 5 Donald Trump chris wallace      152 0.00251  0.693 0.00174
+ 6 Donald Trump savannah guthrie   142 0.00235  0.693 0.00163
+ 7 Donald Trump laura ingraham      70 0.00116  1.39  0.00160
+ 8 Donald Trump winning winning     65 0.00107  1.39  0.00149
+ 9 Donald Trump bret baier          62 0.00102  1.39  0.00142
+10 Donald Trump crazy bernie        60 0.000991 1.39  0.00137
+# ℹ 27,445 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="sc">|&gt;</span> </span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Joe Biden"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 24,826 × 6
+   speaker   bigram                n       tf   idf   tf_idf
+   &lt;chr&gt;     &lt;chr&gt;             &lt;int&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+ 1 Joe Biden shanrika nelson      41 0.000919 1.39  0.00127 
+ 2 Joe Biden nihad awad           36 0.000807 1.39  0.00112 
+ 3 Joe Biden god protect          34 0.000762 1.39  0.00106 
+ 4 Joe Biden community college    31 0.000695 1.39  0.000963
+ 5 Joe Biden lester holt          60 0.00134  0.693 0.000932
+ 6 Joe Biden dignity it’s         29 0.000650 1.39  0.000901
+ 7 Joe Biden meat packing         28 0.000628 1.39  0.000870
+ 8 Joe Biden paycheck it’s        27 0.000605 1.39  0.000839
+ 9 Joe Biden student debt         27 0.000605 1.39  0.000839
+10 Joe Biden tim mahone           27 0.000605 1.39  0.000839
+# ℹ 24,816 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="sc">|&gt;</span> </span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(speaker <span class="sc">==</span> <span class="st">"Kamala Harris"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,833 × 6
+   speaker       bigram                   n      tf   idf  tf_idf
+   &lt;chr&gt;         &lt;chr&gt;                &lt;int&gt;   &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;
+ 1 Kamala Harris angela rye              46 0.00719 1.39  0.00997
+ 2 Kamala Harris carla cunningham        33 0.00516 1.39  0.00715
+ 3 Kamala Harris representative carla    33 0.00516 1.39  0.00715
+ 4 Kamala Harris dr gracie               24 0.00375 1.39  0.00520
+ 5 Kamala Harris gracie galloway         20 0.00313 1.39  0.00433
+ 6 Kamala Harris wendell anthony         18 0.00281 1.39  0.00390
+ 7 Kamala Harris frederica wilson        17 0.00266 1.39  0.00368
+ 8 Kamala Harris black women             32 0.00500 0.693 0.00347
+ 9 Kamala Harris affordable care         31 0.00484 0.693 0.00336
+10 Kamala Harris cassandra brooks        15 0.00234 1.39  0.00325
+# ℹ 3,823 more rows</code></pre>
+</div>
+</div>
+<p>Here we can see the differences in bigrams between the speakers to see how the speeches between speakers differed. Next we can plot the most unique bigrams per each speaker.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>bigram_tf_idf <span class="sc">%&gt;%</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(speaker) <span class="sc">%&gt;%</span></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">#</span></span>
+<span id="cb89-4"><a href="#cb89-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(tf_idf, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb89-5"><a href="#cb89-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb89-6"><a href="#cb89-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(tf_idf, <span class="fu">fct_reorder</span>(bigram, tf_idf), <span class="at">fill =</span> speaker)) <span class="sc">+</span></span>
+<span id="cb89-7"><a href="#cb89-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb89-8"><a href="#cb89-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>speaker, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb89-9"><a href="#cb89-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"tf-idf"</span>, <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We see that the difference between especially Pence and Trump is interesting, Trumps unique bigrams contained much more ‘controversial’ terms, such as sleepy joe, crazy bernie, etc. While Pence is clearly the more traditional and conservative running mate, with terms such as taxpayer funding and supporting law.</p>
+</section>
+<section id="using-n-grams-to-expand-our-understanding-of-the-context" class="level3">
+<h3 class="anchored" data-anchor-id="using-n-grams-to-expand-our-understanding-of-the-context">Using n-grams to expand our understanding of the context</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="co">#set negation words</span></span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>negation_words <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"not"</span>, <span class="st">"no"</span>, <span class="st">"never"</span>, <span class="st">"without"</span>)</span>
+<span id="cb90-3"><a href="#cb90-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-4"><a href="#cb90-4" aria-hidden="true" tabindex="-1"></a><span class="co">#here we find bigrams that are negated somehow using the negation words above</span></span>
+<span id="cb90-5"><a href="#cb90-5" aria-hidden="true" tabindex="-1"></a>negated_words <span class="ot">&lt;-</span> bigrams_separated <span class="sc">%&gt;%</span></span>
+<span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(word1 <span class="sc">%in%</span> negation_words) <span class="sc">%&gt;%</span></span>
+<span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(<span class="fu">get_sentiments</span>(<span class="st">"afinn"</span>), <span class="at">by =</span> <span class="fu">c</span>(<span class="at">word2 =</span> <span class="st">"word"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb90-8"><a href="#cb90-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word1, word2, value, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb90-9"><a href="#cb90-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb90-10"><a href="#cb90-10" aria-hidden="true" tabindex="-1"></a>negated_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 278 × 4
+   word1   word2   value     n
+   &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt; &lt;int&gt;
+ 1 no      no         -1   178
+ 2 no      matter      1   106
+ 3 not     good        3    53
+ 4 never   forget     -1    51
+ 5 not     easy        1    41
+ 6 not     like        2    35
+ 7 no      good        3    33
+ 8 without apology    -1    20
+ 9 not     happy       3    19
+10 never   stop       -1    18
+# ℹ 268 more rows</code></pre>
+</div>
+</div>
+<p>We see that there are as expected many words that are used with negation words thus completely changing the context of the word (a thing to keep in mind when checking out the results for the sentiment analysis).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize the words following or before negation words</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>negated_words <span class="sc">%&gt;%</span></span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate the contribution of each negated bigram (frequency * sentiment value)</span></span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb92-5"><a href="#cb92-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">contribution =</span> n <span class="sc">*</span> value,  <span class="co"># Create a new column 'contribution' which is the product of 'n' (frequency) and 'value' (sentiment score)</span></span>
+<span id="cb92-6"><a href="#cb92-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">sign =</span> <span class="fu">if_else</span>(value <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="st">"positive"</span>, <span class="st">"negative"</span>)  <span class="co"># Create a new column 'sign' to label the sentiment as positive or negative based on 'value'</span></span>
+<span id="cb92-7"><a href="#cb92-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb92-8"><a href="#cb92-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Group by the first word of the bigram to find top bigrams with the first word</span></span>
+<span id="cb92-9"><a href="#cb92-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(word1) <span class="sc">%&gt;%</span></span>
+<span id="cb92-10"><a href="#cb92-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Select the top 15 bigrams by the absolute value of their contribution, for each 'word1' group</span></span>
+<span id="cb92-11"><a href="#cb92-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n</span>(<span class="dv">15</span>, <span class="fu">abs</span>(contribution)) <span class="sc">%&gt;%</span></span>
+<span id="cb92-12"><a href="#cb92-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Remove the grouping so that subsequent operations are not affected by it</span></span>
+<span id="cb92-13"><a href="#cb92-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb92-14"><a href="#cb92-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Plot the data with 'word2' on the y-axis ordered within 'word1' by 'contribution', and 'contribution' on the x-axis</span></span>
+<span id="cb92-15"><a href="#cb92-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(</span>
+<span id="cb92-16"><a href="#cb92-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="fu">reorder_within</span>(word2, contribution, word1),  <span class="co"># Reorder 'word2' within 'word1' based on 'contribution'</span></span>
+<span id="cb92-17"><a href="#cb92-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> contribution,  <span class="co"># Set 'contribution' as the x-axis</span></span>
+<span id="cb92-18"><a href="#cb92-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> sign  <span class="co"># Color bars based on the sign of the sentiment (positive/negative)</span></span>
+<span id="cb92-19"><a href="#cb92-19" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">+</span></span>
+<span id="cb92-20"><a href="#cb92-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>() <span class="sc">+</span>  <span class="co"># Use a column geometry to create bars</span></span>
+<span id="cb92-21"><a href="#cb92-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_reordered</span>() <span class="sc">+</span>  <span class="co"># Reorder the y-axis based on the 'contribution' within each 'word1' group</span></span>
+<span id="cb92-22"><a href="#cb92-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> word1, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span>  <span class="co"># Create a separate plot for each 'word1' allowing y-axis to vary</span></span>
+<span id="cb92-23"><a href="#cb92-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(  <span class="co"># Set the labels for the plot</span></span>
+<span id="cb92-24"><a href="#cb92-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">'Words preceded by a negation'</span>,  <span class="co"># y-axis label</span></span>
+<span id="cb92-25"><a href="#cb92-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Contribution (Sentiment value * number of mentions)"</span>,  <span class="co"># x-axis label</span></span>
+<span id="cb92-26"><a href="#cb92-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Most common positive or negative words to follow negations"</span>  <span class="co"># Title of the plot</span></span>
+<span id="cb92-27"><a href="#cb92-27" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="correlating-pairs-of-words" class="level2">
+<h2 class="anchored" data-anchor-id="correlating-pairs-of-words">Correlating pairs of words</h2>
+<p>Next we want to see if there are words that correlate with each other within a certain speech, this could help us with expanding our understanding of the context of the speeches and thus the campaigns.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Process speeches to extract individual words</span></span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>speech_words <span class="ot">&lt;-</span> filtered_speeches <span class="sc">%&gt;%</span></span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, text) <span class="sc">%&gt;%</span>  <span class="co"># Tokenize 'text' to separate into individual words</span></span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>word <span class="sc">%in%</span> stop_words<span class="sc">$</span>word) <span class="sc">%&gt;%</span>  <span class="co"># Remove stop words as defined in the stop_words data frame</span></span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">grepl</span>(<span class="st">"^[0-9]+$"</span>, word))   <span class="co"># Remove words that are entirely numeric using a regular expression</span></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a><span class="co"># The speech_words data frame now contains the tokenized words from the speeches, without stop words and numeric words</span></span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a><span class="co"># View the speech_words data frame</span></span>
+<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>speech_words</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 373,613 × 6
+   speaker   title                               date       location type  word 
+   &lt;chr&gt;     &lt;chr&gt;                               &lt;date&gt;     &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;
+ 1 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… joe  
+ 2 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… biden
+ 3 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… mich…
+ 4 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… what…
+ 5 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… sam  
+ 6 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… alex…
+ 7 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… taki…
+ 8 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… time 
+ 9 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… tell…
+10 Joe Biden Joe Biden Southfield, MI Speech on… 2020-10-16 Southfi… Camp… story
+# ℹ 373,603 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Count word pairs within the title of the speeches</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a>word_pairs <span class="ot">&lt;-</span> speech_words <span class="sc">%&gt;%</span></span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pairwise_count</span>(word, title, <span class="at">sort =</span> <span class="cn">TRUE</span>)  <span class="co"># Count all pairs of words that appear together within each title, and sort the result</span></span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-5"><a href="#cb95-5" aria-hidden="true" tabindex="-1"></a><span class="co"># The word_pairs data frame now contains the frequency of each pair of words co-occurring within the titles</span></span>
+<span id="cb95-6"><a href="#cb95-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb95-7"><a href="#cb95-7" aria-hidden="true" tabindex="-1"></a><span class="co"># View the word_pairs data frame</span></span>
+<span id="cb95-8"><a href="#cb95-8" aria-hidden="true" tabindex="-1"></a>word_pairs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 52,127,796 × 3
+   item1     item2         n
+   &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt;
+ 1 people    we’re       154
+ 2 we’re     people      154
+ 3 president time        153
+ 4 we’re     time        153
+ 5 people    time        153
+ 6 we’re     it’s        153
+ 7 people    it’s        153
+ 8 time      president   153
+ 9 we’re     president   153
+10 people    president   153
+# ℹ 52,127,786 more rows</code></pre>
+</div>
+</div>
+<p>This analysis has given us pairs of words and the number of times they have coappeared within one speech. We see a lot of quite unuseful pairs, that are expected in most if not all of the speeches.</p>
+<p>We can look into some correlations, but this doesn’t give much additional information about the campaigns or speeches other than that they are generally very partiotic and use a lot of diction to support that.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter word pairs for occurrences with the word "america"</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a>word_pairs <span class="sc">%&gt;%</span></span>
+<span id="cb97-3"><a href="#cb97-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(item1 <span class="sc">==</span> <span class="st">"america"</span>)  <span class="co"># Select rows where the first item of the pair is "america"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15,760 × 3
+   item1   item2         n
+   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;
+ 1 america time        141
+ 2 america it’s        141
+ 3 america president   141
+ 4 america we’re       141
+ 5 america people      141
+ 6 america country     140
+ 7 america joe         139
+ 8 america that’s      139
+ 9 america american    139
+10 america i’m         139
+# ℹ 15,750 more rows</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter word pairs for occurrences with the word "united"</span></span>
+<span id="cb99-2"><a href="#cb99-2" aria-hidden="true" tabindex="-1"></a>word_pairs <span class="sc">%&gt;%</span></span>
+<span id="cb99-3"><a href="#cb99-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(item1 <span class="sc">==</span> <span class="st">"united"</span>) <span class="co"># Select rows where the first item of the pair is "united"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 15,842 × 3
+   item1  item2         n
+   &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt;
+ 1 united time        145
+ 2 united president   145
+ 3 united we’re       145
+ 4 united people      145
+ 5 united it’s        144
+ 6 united joe         143
+ 7 united i’m         143
+ 8 united biden       142
+ 9 united country     142
+10 united that’s      142
+# ℹ 15,832 more rows</code></pre>
+</div>
+</div>
+<section id="pairwise-correlation" class="level3">
+<h3 class="anchored" data-anchor-id="pairwise-correlation">Pairwise correlation</h3>
+<p>When looking at the corpus (thus the campaign season overall), the Phi coefficient measures <strong>how likely it is that two words appear together taking into account the probability for each word of appearing alone</strong>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a>word_cors <span class="ot">&lt;-</span> speech_words <span class="sc">%&gt;%</span></span>
+<span id="cb101-2"><a href="#cb101-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(word) <span class="sc">%&gt;%</span></span>
+<span id="cb101-3"><a href="#cb101-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">n</span>() <span class="sc">&gt;=</span> <span class="dv">20</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb101-4"><a href="#cb101-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pairwise_cor</span>(word, title, <span class="at">sort =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb101-5"><a href="#cb101-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb101-6"><a href="#cb101-6" aria-hidden="true" tabindex="-1"></a>word_cors <span class="sc">|&gt;</span> </span>
+<span id="cb101-7"><a href="#cb101-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(correlation <span class="sc">!=</span> <span class="st">"Inf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7,082,794 × 3
+   item1    item2    correlation
+   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+ 1 bader    ruth               1
+ 2 ruth     bader              1
+ 3 angeles  los                1
+ 4 los      angeles            1
+ 5 naleo    arturo             1
+ 6 arturo   naleo              1
+ 7 navarro  lulu               1
+ 8 lulu     navarro            1
+ 9 gracie   galloway           1
+10 galloway gracie             1
+# ℹ 7,082,784 more rows</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a>word_cors <span class="sc">%&gt;%</span></span>
+<span id="cb103-2"><a href="#cb103-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(item1 <span class="sc">==</span> <span class="st">"america"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,661 × 3
+   item1   item2       correlation
+   &lt;chr&gt;   &lt;chr&gt;             &lt;dbl&gt;
+ 1 america million           0.674
+ 2 america american          0.621
+ 3 america americans         0.578
+ 4 america country           0.542
+ 5 america family            0.536
+ 6 america united            0.522
+ 7 america jobs              0.487
+ 8 america single            0.474
+ 9 america communities       0.458
+10 america middle            0.451
+# ℹ 2,651 more rows</code></pre>
+</div>
+</div>
+<p>To illustrate our analysis, we can filter by several words and plot it:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>word_cors <span class="sc">%&gt;%</span></span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we define a vector for 4 words</span></span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(item1 <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"america"</span>, <span class="st">"covid"</span>, <span class="st">"guns"</span>, <span class="st">"school"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we group by item1</span></span>
+<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(item1) <span class="sc">%&gt;%</span></span>
+<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we use the first 6 most correlated</span></span>
+<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(correlation, <span class="at">n =</span> <span class="dv">6</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb105-8"><a href="#cb105-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb105-9"><a href="#cb105-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we reorder item2 regarding its correlation</span></span>
+<span id="cb105-10"><a href="#cb105-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">item2 =</span> <span class="fu">reorder</span>(item2, correlation)) <span class="sc">%&gt;%</span></span>
+<span id="cb105-11"><a href="#cb105-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#we plot</span></span>
+<span id="cb105-12"><a href="#cb105-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(item2, correlation, <span class="at">fill=</span>item1)) <span class="sc">+</span></span>
+<span id="cb105-13"><a href="#cb105-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb105-14"><a href="#cb105-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> item1, <span class="at">scales =</span> <span class="st">"free"</span>) <span class="sc">+</span></span>
+<span id="cb105-15"><a href="#cb105-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This graph provides a visualization of how certain words (item1, the vector of words) are contextually related to other words (item2) within the total campaign season. The correlated words make sense with each important key topic of the election season. For example its interesting to see one of the most correlated words with guns in the speeches overall was aliens, suggesting that Trump must have been using those 2 words together quite a bit (as it was a unique word for him), suggesting that he was linking immigrants to guns often. The other words in the correlation graph also show that this they must have been used plenty by Trump, as for example sleepy and fake were also used, suggesting that Trumps discussion of guns often involved blaming the Democratic side and accusing people of fake news.</p>
+</section>
+<section id="plotting-correlations-in-a-graph" class="level3">
+<h3 class="anchored" data-anchor-id="plotting-correlations-in-a-graph">Plotting correlations in a graph</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2016</span>)</span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>word_cors <span class="sc">%&gt;%</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(correlation <span class="sc">&gt;</span> <span class="fl">0.70</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">graph_from_data_frame</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggraph</span>(<span class="at">layout =</span> <span class="st">"fr"</span>) <span class="sc">+</span></span>
+<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_edge_link</span>(<span class="fu">aes</span>(<span class="at">edge_alpha =</span> correlation), <span class="at">show.legend =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb106-8"><a href="#cb106-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_point</span>(<span class="at">color =</span> <span class="st">"lightblue"</span>, <span class="at">size =</span> <span class="dv">5</span>) <span class="sc">+</span></span>
+<span id="cb106-9"><a href="#cb106-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_node_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">repel =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb106-10"><a href="#cb106-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Using the `size` aesthetic in this geom was deprecated in ggplot2 3.4.0.
+ℹ Please use `linewidth` in the `default_aes` field and elsewhere instead.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: ggrepel: 300 unlabeled data points (too many overlaps). Consider
+increasing max.overlaps</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment-textmining_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>In previous plots we were just seeing bigrams, here we are looking at all words correlations over 0.7 to see how the correlations play out among each other. As expected we see many unique names near each other, also some words that make sense that go together, eg. bear, arms, amendment, and nearby these gun words we also see Mike and Pence and borders, so we see some conservative grouping here clearly.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Ultimately I didn’t come to the analysis with a clear conclusion in mind, but I wanted to explore the makeup of the 2020 Presidential elections. Some interesting notations were made, and the development of sentiment in the campaigns and among individual running candidates was interesting to see. It was also interesting to note the clear differences in textual analysis between Trump and Pence, a difference that didn’t exist so much within the Democratic nominees.</p>
+<p>It was also interesting to look at the bigrams and word and term frequencies among speakers, they show clear differences and with the TF-IDF analysis we were able to see the differences between speakers clearly in their content that they put forward. Ultimately I thought this was quite interesting, and if I was to continue the analysis I would have done more exploring into the time and dates of speeches given to explore the development of sentiment more and development of term frequencies to see if there had been changes.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

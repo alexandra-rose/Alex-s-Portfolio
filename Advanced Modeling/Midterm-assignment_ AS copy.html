@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Midterm Assignment / Advanced Modeling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Midterm-assignment_ AS_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/quarto-html/quarto.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/quarto-html/popper.min.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Midterm-assignment_ AS_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Midterm-assignment_ AS_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Midterm-assignment_ AS_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Midterm-assignment_ AS_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Midterm-assignment_ AS_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="Midterm-assignment_ AS_files/libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="Midterm-assignment_ AS_files/libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="Midterm-assignment_ AS_files/libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet">
+<script src="Midterm-assignment_ AS_files/libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="Midterm-assignment_ AS_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="Midterm-assignment_ AS_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Midterm Assignment / Advanced Modeling</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Midterm Project: feature engineering + unsupervised learning Alexandra Salo 27.2</p>
+<p>Load needed libraries</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages("WDI")</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.4     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(wbstats)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'mice'
+
+The following object is masked from 'package:stats':
+
+    filter
+
+The following objects are masked from 'package:base':
+
+    cbind, rbind</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DataExplorer)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(countrycode)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(factoextra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally) <span class="co"># ggplot2-based visualization of correlations</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(factoextra) <span class="co"># ggplot2-based visualization of pca</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rworldmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Loading required package: sp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'sp' was built under R version 4.3.2</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>### Welcome to rworldmap ###
+For a short introduction type :      vignette('rworldmap')</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'plotly'
+
+The following object is masked from 'package:ggplot2':
+
+    last_plot
+
+The following object is masked from 'package:stats':
+
+    filter
+
+The following object is masked from 'package:graphics':
+
+    layout</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cluster)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mclust)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Package 'mclust' version 6.0.1
+Type 'citation("mclust")' for citing this R package in publications.
+
+Attaching package: 'mclust'
+
+The following object is masked from 'package:purrr':
+
+    map</code></pre>
+</div>
+</div>
+<section id="the-hypothesis" class="level2">
+<h2 class="anchored" data-anchor-id="the-hypothesis">The Hypothesis</h2>
+<p>For my assignment I want to analyze what factors are the most important for predicting GDP growth in a country, to be able to analyze this I browsed the available data through the wbstat package and chose 13 relevant variables that I considered to be important to the macroeconomics of a country.</p>
+<p>In selecting the countries, I chose all the countries available for the data and chose the year 2018 for the reseacrh year.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">#wb_search()</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>my_indicators <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"gdp_pc"</span> <span class="ot">=</span> <span class="st">"NY.GDP.PCAP.KD"</span>, </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"gdp_gr"</span> <span class="ot">=</span> <span class="st">"NY.GDP.MKTP.KD.ZG"</span>, </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"pop"</span> <span class="ot">=</span> <span class="st">"SP.POP.TOTL"</span>,</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"gini"</span> <span class="ot">=</span> <span class="st">"SI.POV.GINI"</span>,</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"unemp"</span> <span class="ot">=</span> <span class="st">"SL.UEM.TOTL.NE.ZS"</span>, </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"CO2"</span> <span class="ot">=</span> <span class="st">"EN.ATM.CO2E.KT"</span>,</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"math"</span> <span class="ot">=</span> <span class="st">"2.0.cov.Math.pl_3.all"</span>, </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"agedr"</span> <span class="ot">=</span> <span class="st">"SP.POP.DPND"</span>, </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"forests"</span> <span class="ot">=</span> <span class="st">"AG.LND.FRST.HA"</span>, </span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"size"</span> <span class="ot">=</span> <span class="st">"AG.SRF.TOTL.HA"</span>, </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"safe"</span> <span class="ot">=</span> <span class="st">"GV.RULE.LW.ES"</span>, </span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"inflation"</span> <span class="ot">=</span> <span class="st">"NY.GDP.DEFL.KD.ZG"</span>, </span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"a_land"</span> <span class="ot">=</span> <span class="st">"AG.LND.AGRI.ZS"</span>)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>data_new <span class="ot">&lt;-</span> <span class="fu">wb_data</span>(my_indicators, <span class="at">start_date =</span> <span class="dv">2018</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> data_new <span class="sc">|&gt;</span> </span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>iso3c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="descriptive-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-analysis">Descriptive analysis</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">create_report</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+
+processing file: report.rmd</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1/42                                 
+2/42 [global_options]                
+3/42                                 
+4/42 [introduce]                     
+5/42                                 
+6/42 [plot_intro]                    </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>7/42                                 
+8/42 [data_structure]                
+9/42                                 
+10/42 [missing_profile]               </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>11/42                                 
+12/42 [univariate_distribution_header]
+13/42                                 
+14/42 [plot_histogram]                </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>15/42                                 
+16/42 [plot_density]                  
+17/42                                 
+18/42 [plot_frequency_bar]            </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>19/42                                 
+20/42 [plot_response_bar]             
+21/42                                 
+22/42 [plot_with_bar]                 
+23/42                                 
+24/42 [plot_normal_qq]                </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>25/42                                 
+26/42 [plot_response_qq]              
+27/42                                 
+28/42 [plot_by_qq]                    
+29/42                                 
+30/42 [correlation_analysis]          </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>31/42                                 
+32/42 [principal_component_analysis]  </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>33/42                                 
+34/42 [bivariate_distribution_header] 
+35/42                                 
+36/42 [plot_response_boxplot]         
+37/42                                 
+38/42 [plot_by_boxplot]               
+39/42                                 
+40/42 [plot_response_scatterplot]     
+41/42                                 
+42/42 [plot_by_scatterplot]           </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>output file: /Users/alexandrasalo/Desktop/Advanced Modeling/report.knit.md</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/pandoc +RTS -K512m -RTS '/Users/alexandrasalo/Desktop/Advanced Modeling/report.knit.md' --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output pandoc16fcb4ed1feef.html --lua-filter /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --variable bs3=TRUE --section-divs --table-of-contents --toc-depth 6 --template /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=yeti --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /var/folders/8y/722shxnx3sj3sw4sdp_w7z400000gn/T//RtmpVTHTaT/rmarkdown-str16fcb68e9d1e0.html </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Output created: report.html</code></pre>
+</div>
+</div>
+<p>I gather a descriptive analysis using the DataExplorer package. In this I note that not many of the variables are normally distributed, and there are a few variables that have high amounts of missing values. I will deal with the missing values here. I move to compute the missing variables using the random forest technique to estimate them. However I note that this may introduce biases, as the missing values are most regularly from lower income countries where their real value may well be lower than what is estimated using this technique, thus introducing a bias.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">=</span> <span class="dv">5</span> <span class="co"># number of multiple imputations, we are going to make four iterations.</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>mice_mod <span class="ot">&lt;-</span> <span class="fu">mice</span>(df, <span class="at">m=</span>m, <span class="at">method=</span><span class="st">'rf'</span>) <span class="co"># replace the missing values with the prediction. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ iter imp variable
+  1   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Number of logged events: 3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">complete</span>(mice_mod, <span class="at">action=</span>m) <span class="co"># we have the complete data set</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co">#We need to apply the log to the GDP_gr to see if we can get a more symmetric result</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>gdp_gr <span class="ot">=</span> <span class="fu">log</span>(df<span class="sc">$</span>gdp_gr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in log(df$gdp_gr): NaNs produced</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>gdp_pc <span class="ot">=</span> <span class="fu">log</span>(df<span class="sc">$</span>gdp_pc)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>m <span class="ot">=</span> <span class="dv">5</span> <span class="co"># number of multiple imputations, we are going to make four iterations.</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>mice_mod <span class="ot">&lt;-</span> <span class="fu">mice</span>(df, <span class="at">m=</span>m, <span class="at">method=</span><span class="st">'rf'</span>) <span class="co"># replace the missing values with the prediction. </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ iter imp variable
+  1   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  1   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  2   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  3   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  4   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   1  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   2  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   3  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   4  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp
+  5   5  a_land  CO2  inflation  gdp_gr  gdp_pc  gini  unemp</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Number of logged events: 3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">complete</span>(mice_mod, <span class="at">action=</span>m) <span class="co"># we have the complete data set</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co">#check new distributions, they are better!</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">create_report</span>(X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+
+processing file: report.rmd</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1/42                                 
+2/42 [global_options]                
+3/42                                 
+4/42 [introduce]                     
+5/42                                 
+6/42 [plot_intro]                    </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>7/42                                 
+8/42 [data_structure]                
+9/42                                 
+10/42 [missing_profile]               </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>11/42                                 
+12/42 [univariate_distribution_header]
+13/42                                 
+14/42 [plot_histogram]                </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>15/42                                 
+16/42 [plot_density]                  
+17/42                                 
+18/42 [plot_frequency_bar]            </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>19/42                                 
+20/42 [plot_response_bar]             
+21/42                                 
+22/42 [plot_with_bar]                 
+23/42                                 
+24/42 [plot_normal_qq]                </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>25/42                                 
+26/42 [plot_response_qq]              
+27/42                                 
+28/42 [plot_by_qq]                    
+29/42                                 
+30/42 [correlation_analysis]          </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>31/42                                 
+32/42 [principal_component_analysis]  </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>33/42                                 
+34/42 [bivariate_distribution_header] 
+35/42                                 
+36/42 [plot_response_boxplot]         
+37/42                                 
+38/42 [plot_by_boxplot]               
+39/42                                 
+40/42 [plot_response_scatterplot]     
+41/42                                 
+42/42 [plot_by_scatterplot]           </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>output file: /Users/alexandrasalo/Desktop/Advanced Modeling/report.knit.md</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>/Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/pandoc +RTS -K512m -RTS '/Users/alexandrasalo/Desktop/Advanced Modeling/report.knit.md' --to html4 --from markdown+autolink_bare_uris+tex_math_single_backslash --output pandoc16fcb55ab907d.html --lua-filter /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmarkdown/lua/pagebreak.lua --lua-filter /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmarkdown/lua/latex-div.lua --embed-resources --standalone --variable bs3=TRUE --section-divs --table-of-contents --toc-depth 6 --template /Library/Frameworks/R.framework/Versions/4.3-x86_64/Resources/library/rmarkdown/rmd/h/default.html --no-highlight --variable highlightjs=1 --variable theme=yeti --mathjax --variable 'mathjax-url=https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML' --include-in-header /var/folders/8y/722shxnx3sj3sw4sdp_w7z400000gn/T//RtmpVTHTaT/rmarkdown-str16fcb1e8b74f5.html </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Output created: report.html</code></pre>
+</div>
+</div>
+<p>Here I impute the missing values using the random forest method with 5 iterations. I also make some logarithmic transformations to create more symmetry in the distributions which I check again here at the end.</p>
+<p>We still see that some variables are quite highly correlated (which we need to look out for), for example population and CO2 emissions (this makes sense) in our descriptive analysis. In order to carry out the Principal Component Analysis, we need to make sure the assumption of linearity is fulfilled. For that I need to check that most variables are more or less linear with each other. I do this by plotting the scatterplots below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>X1 <span class="ot">&lt;-</span> X <span class="sc">|&gt;</span> </span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(iso2c, country, date))</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate correlation matrix</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(X1, <span class="at">use =</span> <span class="st">"pairwise.complete.obs"</span>)</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the number of variables</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>n_variables <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X1)</span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Iterate through each combination of variables</span></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_variables) {</span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span>n_variables) {</span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (i <span class="sc">!=</span> j) {</span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Plot scatterplot between variables i and j</span></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plot</span>(X1[, i], X1[, j], <span class="at">xlab =</span> <span class="fu">names</span>(X1)[i], <span class="at">ylab =</span> <span class="fu">names</span>(X1)[j],</span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>           <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">"Scatterplot between"</span>, <span class="fu">names</span>(X1)[i], <span class="st">"and"</span>, <span class="fu">names</span>(X1)[j]))</span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Add linear best fitting line</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">abline</span>(<span class="fu">lm</span>(X1[, j] <span class="sc">~</span> X1[, i]), <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-6.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-7.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-8.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-9.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-10.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-11.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-12.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-13.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-14.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-15.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-16.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-17.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-18.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-19.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-20.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-21.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-22.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-23.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-24.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-25.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-26.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-27.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-28.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-29.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-30.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-31.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-32.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-33.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-34.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-35.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-5-36.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>After visualizing the scatterplots between the variables, I see that there are quite a few variables that do not fulfill the linear assumption needed to carry out the PCA analysis. So thus I will remove some that seem to be causing most of the issues, and make some transformations to make the relationships more linear. This resulted in me removing the CO2 variable and removing clear outliers for the inflation variable.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>X1_linear <span class="ot">&lt;-</span> X1 <span class="sc">|&gt;</span> </span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>inflation <span class="sc">&gt;</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>CO2) </span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Check linearity again</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate correlation matrix</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(X1_linear, <span class="at">use =</span> <span class="st">"pairwise.complete.obs"</span>)</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the number of variables</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>n_variables <span class="ot">&lt;-</span> <span class="fu">ncol</span>(X1_linear)</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Iterate through each combination of variables</span></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_variables) {</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> i<span class="sc">:</span>n_variables) {</span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (i <span class="sc">!=</span> j) {</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Plot scatterplot between variables i and j</span></span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plot</span>(X1_linear[, i], X1_linear[, j], <span class="at">xlab =</span> <span class="fu">names</span>(X1_linear)[i], <span class="at">ylab =</span> <span class="fu">names</span>(X1_linear)[j],</span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>           <span class="at">main =</span> <span class="fu">paste</span>(<span class="st">"Scatterplot between"</span>, <span class="fu">names</span>(X1_linear)[i], <span class="st">"and"</span>, <span class="fu">names</span>(X1_linear)[j]))</span>
+<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Add linear best fitting line</span></span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">abline</span>(<span class="fu">lm</span>(X1_linear[, j] <span class="sc">~</span> X1_linear[, i]), <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb53-23"><a href="#cb53-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb53-24"><a href="#cb53-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-6.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-7.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-8.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-9.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-10.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-11.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-12.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-13.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-14.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-15.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-16.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-17.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-18.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-19.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-20.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-21.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-22.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-23.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-24.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-25.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-26.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-27.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-6-28.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Having done this I do see a bit better linearity in the relationships.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#put all the countries into Continents</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a lookup table to manually assign continents for ambiguous countries</span></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>manual_continents <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Channel Islands"</span> <span class="ot">=</span> <span class="st">"Europe"</span>,</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>                       <span class="st">"Kosovo"</span> <span class="ot">=</span> <span class="st">"Europe"</span>)</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Use ifelse to assign continents based on the lookup table</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>X<span class="sc">$</span>continent <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(X[, <span class="st">"country"</span>] <span class="sc">%in%</span> <span class="fu">names</span>(manual_continents),</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>                              manual_continents[X[, <span class="st">"country"</span>]],</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">countrycode</span>(<span class="at">sourcevar =</span> X[, <span class="st">"country"</span>],</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">origin =</span> <span class="st">"country.name"</span>,</span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">destination =</span> <span class="st">"continent"</span>,</span>
+<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">nomatch =</span> <span class="cn">NA</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Some values were not matched unambiguously: Channel Islands, Kosovo</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="co">#update this data set to have same transformations</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> X <span class="sc">|&gt;</span> </span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>inflation <span class="sc">&gt;</span> <span class="dv">40</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>CO2)</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a><span class="co"># We just save the names and continents for the graphs</span></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>names<span class="ot">=</span>X<span class="sc">$</span>country</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>continent <span class="ot">=</span> X<span class="sc">$</span>continent</span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>p<span class="ot">=</span><span class="fu">ggplot</span>(X1_linear, <span class="fu">aes</span>(<span class="at">x=</span> gdp_gr, <span class="at">y=</span>unemp, <span class="at">size=</span>pop, <span class="at">text=</span>names)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">alpha=</span><span class="fl">0.9</span>) <span class="sc">+</span> <span class="co">#geom_smooth(se=F, size=0.3) +</span></span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_gradient</span>(<span class="at">low=</span><span class="st">"red"</span>, <span class="at">high=</span><span class="st">"green"</span>) <span class="sc">+</span></span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span> <span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"World countries: GDP growth vs unemployment"</span>, <span class="at">subtitle=</span><span class="st">"(size denotes population)"</span>,<span class="at">caption=</span><span class="st">"Source: World Bank"</span>,</span>
+<span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"GDP growth"</span>, <span class="at">y =</span> <span class="st">"Unemployment)"</span>)</span>
+<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-16"><a href="#cb56-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplotly</span>(p, <span class="at">tooltip=</span><span class="fu">c</span>(<span class="st">"names"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-3f7aa2bc48f598699817" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-3f7aa2bc48f598699817">{"x":{"data":[{"x":[0.86782716711018215,0.17330446505780142,2.0694912108266688,1.391119107528725,0.46295729356906334,0.27301037865372951,1.6486586255206972,0.98249731011242025,1.9391999850615236,1.0669025109203878,0.88599042346766366,0.40546510810815772,0.47619406718391605,0.58385962696158766,1.9016975351692975,1.8877616925640075,1.9905294203035713,0.99136352969239849,0.74722357323229416,1.0710036284298587,1.3422116409648259,1.147288001556015,0.054107649534515016,0.66784108825052924,1.4406934450667606,0.57867122390381487,2.1596387986053003,-2.95194908478623,1.2532976361747667,1.4322456312824234,1.3322191990172223,1.0090388801588148,1.0509774849284172,0.050969275591630794,1.3837986181468573,1.9095089980284945,1.5775645218590908,1.3751106152504837,1.7614928720055565,1.3948808655209572,0.94169500640315118,1.2926568445767133,1.3102133700653396,0.96160988967476957,0.81001804069395944,0.86782716711018215,1.4509736815236258,1.7392095478062959,1.1694087099745423,-0.018945736407230886,1.5632718488500537,1.266266926334201,0.68790210665985785,1.9434109693600867,0.18232155764723795,0.25409317845783197,1.6735592125992549,1.2257238236266672,0.82613379584108038,1.330834728408987,1.9192944730972397,0.13078087516879242,1.3382460514573,0.62329647918139908,1.0048700027460813,-1.5528043023476039,-0.17683672901402775,0.33917720766164916,1.5775178208655718,1.8245618212101105,1.0647901381726437,1.8497912307605855,1.9789152020674994,0.24977512434498211,-1.5528043023476039,0.51188224695812601,1.4728023683178613,-0.47310374397402399,1.2257949791916793,0.46295729356906334,1.4908599599859902,1.0462378956794871,1.3467722426621047,1.0368514664894559,0.51151196109057173,1.6794020063274617,1.6437024292096925,0.79452883230784344,1.8646770597019424,2.1365653902195567,1.3837986181468573,0.96844703036788593,1.5870231674796855,1.4037220841502489,-0.077085232553801869,0.63653644794453001,0.65184206732981986,-0.44100261599922014,1.4109869720269475,1.7312920113166352,1.3238629850067656,2.0107837758285751,1.6319107682861582,0.71922120737589568,1.0672605089976024,0.889528298768266,1.8322550116780261,0.20463522635412781,0.14632740515184486,2.0720855340879374,1.0580569963763997,1.4509736815236258,0.83728399656192731,0.058215577201228226,1.3846205430560059,0.19829489977253803,1.3839213579468332,1.8571068029291002,1.4766238394781741,1.1202567906514458,1.7544636844843602,1.4050168626064166,1.1613856645542626,2.1596387986053003,0.67908989384150509,1.7332844061734314,1.0579974635349445,1.5574042023740013,2.0036762115613396,1.8355948732196585,1.6248955868903601,2.0470320599667988,0.6443570163905108,1.2484500574746809,1.5628018977421061,1.3879780858558948,1.4797137308550878,1.5775523224481016,0.058215577201228226,1.3852206053601483,1.9756656072296068,0.65376027144026472,0.88412141406994704,0.85904929590872603,-0.18765495715733604,2.031088145760553,2.0694912108266688,1.2599324066498077,0.25239466772658992,1.8167288908195707,1.3043871581743545,1.3786026912651022,1.8471130581919157,0.34349385927571185,-0.28442392960780821,1.7825855971569868,1.5870231674796855,0.94169500640315118,1.0470824520476298,1.1644781599760436,0.20463522635412781,0.60542367436274169,0.21096748449120015,1.7965843177842749,1.0322037216293884,2.1443110676253281,1.0160432978553688,1.8260386717112327,1.2740862066371834,1.0101436406805011,1.2449907342454847,0.88412141406994704,0.40139370993651691,1.0966169872462457,1.5029926514889342,1.8877616925640075,1.4766238394781741,1.5990382397491603,1.3938630745718372,1.4938846820374272,0.66784108825052924,0.86714061097450901,0.71922120737589568,1.3101366135303192,0.33158608904100112,1.7247211817315644,0.86459221871355973,1.5676119413607958,1.4405150597473455,2.0281482472125116,1.8245492825947862,0.14632740515184486,-1.4220128993091226,0.71922120737589568,0.96505426460133525,1.102995969107361,0.32734776460358184,1.7052345182504101,1.8411722621636395,1.2494323825970741,-1.8578992644382923,1.0802394813230778,1.7715130308270191,1.1555001940866338,0.86782716711018215,0.6443570163905108,2.0102263493735197,1.0647901381726437,2.031088145760553,1.2257238236266672,-0.28442392960780821,0.44262205631907592,1.3948808655209572],"y":[13.43,3.1930000000000001,8.7989999999999995,12.304,7.8300000000000001,2.2360000000000002,13.212,11.702,11.702,5.2999999999999998,4.9329999999999998,4.9000000000000004,3.2999999999999998,5.9480000000000004,1.4730000000000001,4.6950000000000003,10.759,5.2119999999999997,3.7999999999999998,10,18.399999999999999,4.7629999999999999,19.329000000000001,2.2480000000000002,3.5190000000000001,12.33,8.3219999999999992,8.6999999999999993,3.3500000000000001,4.7130000000000001,14.019,5.8369999999999997,4.7130000000000001,6.1470000000000002,7.6470000000000002,4.9299999999999997,1.135,9.3499999999999996,3.5190000000000001,1.4730000000000001,9.3599999999999994,4.335,12.17,9.0099999999999998,1.7,13.43,3.7999999999999998,8.5039999999999996,2.246,3.3839999999999999,1.2390000000000001,13.212,5.1310000000000002,5.8609999999999998,15.459,3.5299999999999998,9.8550000000000004,27.760999999999999,15.255000000000001,5.4119999999999999,4.7629999999999999,7.3609999999999998,19.876999999999999,9.0180000000000007,3.9169999999999998,3.1960000000000002,21.199999999999999,3.996,12.667,0.76700000000000002,3.665,4.0830000000000002,4.1269999999999998,3.1960000000000002,18.257000000000001,19.178999999999998,14.066000000000001,3.528,2.2829999999999999,13.43,14.019,2.8050000000000002,5.6219999999999999,8.4320000000000004,3.1930000000000001,3.7090000000000001,4.3869999999999996,19.329000000000001,7.6520000000000001,5.7409999999999997,12.195,2.3380000000000001,2.7040000000000002,3.9169999999999998,10.609999999999999,5.4699999999999998,18.257000000000001,2.4670000000000001,4.8499999999999996,3.7090000000000001,3.673,4.0830000000000002,5.2000000000000002,11.702,3.8239999999999998,1.8340000000000001,0.76700000000000002,0.76700000000000002,3.492,10.956,19.329000000000001,7.8300000000000001,4.3179999999999996,8.3360000000000003,6.1470000000000002,5.585,7.4119999999999999,1.8340000000000001,18.257000000000001,5.1310000000000002,7.8300000000000001,1.2390000000000001,3.1930000000000001,18.399999999999999,3.2749999999999999,11.702,21.199999999999999,1.6200000000000001,3.665,0.76700000000000002,15.19,5.3769999999999998,10,3.1930000000000001,5.6219999999999999,6.4269999999999996,3.5670000000000002,3.2999999999999998,19.876999999999999,11.702,1.6200000000000001,1.135,5.2000000000000002,3.831,3.7999999999999998,12.33,15.19,4.335,1.8,4.0830000000000002,5.3129999999999997,3.492,2.3380000000000001,14.019,5.2000000000000002,3.8460000000000001,9.1999999999999993,12.33,6.9939999999999998,6.2169999999999996,26.256,5.585,0.11,4.1870000000000003,4.8460000000000001,10.759,6.0289999999999999,3.5670000000000002,2.8050000000000002,12.17,3.1930000000000001,4.0060000000000002,7.8300000000000001,3.5190000000000001,12.733000000000001,10.759,6.1470000000000002,13.43,6.5439999999999996,5.1159999999999997,6.3650000000000002,3.3500000000000001,3.3500000000000001,3.528,10.759,11.702,1.135,9.0180000000000007,0.76600000000000001,1.6200000000000001,4.1870000000000003,12.17,2.2480000000000002,6.3650000000000002,15.459,10.956,5.585,3.5190000000000001,13.212,8.7989999999999995,8.3360000000000003,3.8959999999999999,9.3499999999999996,12.304,18.399999999999999,11.702,1.161,4.0060000000000002,15.19,27.760999999999999,5.0309999999999997,24.218,5.0309999999999997],"text":["Aruba","Afghanistan","Angola","Albania","Andorra","United Arab Emirates","Armenia","American Samoa","Antigua and Barbuda","Australia","Austria","Azerbaijan","Burundi","Belgium","Benin","Burkina Faso","Bangladesh","Bulgaria","Bahrain","Bahamas, The","Bosnia and Herzegovina","Belarus","Belize","Bermuda","Bolivia","Brazil","Barbados","Brunei Darussalam","Bhutan","Botswana","Central African Republic","Canada","Switzerland","Channel Islands","Chile","China","Cote d'Ivoire","Cameroon","Congo, Dem. Rep.","Congo, Rep.","Colombia","Comoros","Cabo Verde","Costa Rica","Cuba","Curacao","Cayman Islands","Cyprus","Czechia","Germany","Djibouti","Dominica","Denmark","Dominican Republic","Algeria","Ecuador","Egypt, Arab Rep.","Eritrea","Spain","Estonia","Ethiopia","Finland","Fiji","France","Faroe Islands","Micronesia, Fed. Sts.","Gabon","United Kingdom","Georgia","Ghana","Gibraltar","Guinea","Gambia, The","Guinea-Bissau","Equatorial Guinea","Greece","Grenada","Greenland","Guatemala","Guam","Guyana","Hong Kong SAR, China","Honduras","Croatia","Haiti","Hungary","Indonesia","Isle of Man","India","Ireland","Iran, Islamic Rep.","Iraq","Iceland","Israel","Italy","Jamaica","Jordan","Japan","Kazakhstan","Kenya","Kyrgyz Republic","Cambodia","Kiribati","St. Kitts and Nevis","Korea, Rep.","Kuwait","Lao PDR","Lebanon","Liberia","Libya","St. Lucia","Liechtenstein","Sri Lanka","Lesotho","Lithuania","Luxembourg","Latvia","Macao SAR, China","St. Martin (French part)","Morocco","Monaco","Moldova","Madagascar","Maldives","Mexico","Marshall Islands","North Macedonia","Mali","Malta","Myanmar","Montenegro","Mongolia","Northern Mariana Islands","Mozambique","Mauritania","Mauritius","Malawi","Malaysia","Namibia","New Caledonia","Niger","Nigeria","Nicaragua","Netherlands","Norway","Nepal","Nauru","New Zealand","Oman","Pakistan","Panama","Peru","Philippines","Palau","Papua New Guinea","Poland","Puerto Rico","Korea, Dem. People's Rep.","Portugal","Paraguay","West Bank and Gaza","French Polynesia","Qatar","Romania","Russian Federation","Rwanda","Saudi Arabia","Senegal","Singapore","Solomon Islands","Sierra Leone","El Salvador","San Marino","Somalia","Serbia","South Sudan","Sao Tome and Principe","Suriname","Slovak Republic","Slovenia","Sweden","Eswatini","Sint Maarten (Dutch part)","Seychelles","Syrian Arab Republic","Turks and Caicos Islands","Chad","Togo","Thailand","Tajikistan","Turkmenistan","Timor-Leste","Tonga","Trinidad and Tobago","Tunisia","Turkiye","Tuvalu","Tanzania","Uganda","Ukraine","Uruguay","United States","Uzbekistan","St. Vincent and the Grenadines","British Virgin Islands","Virgin Islands (U.S.)","Viet Nam","Vanuatu","Samoa","Kosovo","Yemen, Rep.","South Africa","Zambia"],"type":"scatter","mode":"markers","marker":{"autocolorscale":false,"color":"rgba(0,0,0,1)","opacity":0.90000000000000002,"size":[3.9351244533549159,6.8352085916718544,6.600705862849269,4.6321552529769878,3.9073211507174896,5.304058877467714,4.6276917386320866,3.8773130738250838,3.9229173923667489,6.2999516201941219,5.2788305520297483,5.3694217243031206,5.4892978500442666,5.4843458294214047,5.5222748851005852,6.0574524582443257,10.234674916426002,5.1158329536832099,4.3926264984916621,4.0950488450772697,4.7084302378316742,5.3287916694752386,4.0869404568178762,3.8957453161088216,5.4977222325102391,11.094086279879393,4.0411353825883207,4.1078477249613625,4.2168525204715923,4.5677718553613218,4.9171984768064352,6.8509273329300653,5.2508757333078844,3.9790664526074151,5.9608956867249612,22.677165354330711,6.3266149222554198,6.3056768406182133,8.4878692563547222,4.9553055018489163,7.3210629846888091,4.2209712987622812,4.1572233684512137,4.9111351526338805,5.476951979322898,3.9739463924358476,3.8967986016098033,4.3340828730708747,5.4237501640537449,8.3734268106626306,4.2956496847476426,3.9030770854265131,4.9928759350102192,5.4342150343910562,7.0462193972622282,5.8601983456545677,8.9184196184530329,4.7146098783460886,7.2308028349760995,4.357274177357465,9.0982930671745521,4.9633396347371388,4.260357791659688,7.9141169405311143,3.8805541141185116,3.9391362169512272,4.5247054893533925,7.8925710911134885,4.7521334644354765,6.5824682001687416,3.8539967030412807,5.5665726932621684,4.5667226059167492,4.4775971070790428,4.3956815268845491,5.4317014763154239,3.9476114834461487,3.8867497965065221,5.8188763427315751,3.9799696404700082,4.2236165410023618,5.1559591013227895,5.3576148135134636,4.7983223128708579,5.453100220464278,5.3562198574684086,12.025059302859935,3.9157695762300553,22.44839796849319,4.8914564680272479,8.4479633114949735,6.9937257652929237,4.0745391769496724,5.2824158180367,7.7012346273639336,4.6239732902725059,5.4105310123294839,9.4612154598477343,5.935952433573128,7.3452898666056416,5.0471758490357974,5.7986957029321262,3.9479315246979532,3.876446165013514,7.403073205214433,4.8265853807468826,5.1234290136485976,5.0092576155272237,4.8939807394148973,5.0626453563452118,3.9857356283418013,3.8629198813177079,6.1277437062174682,4.5257305733509954,4.6224204293275006,4.1694117237036261,4.4780016250600063,4.1832196581200245,3.8560270709036466,6.8034134808747444,3.8611424841178499,4.6080507748255179,6.3933361789918948,4.1286974284515123,9.398198587791633,3.8740901798660046,4.5046553595282459,6.0316894362458751,4.1268229364215543,7.4408496754424567,4.1740454806638585,4.6754866466086167,3.8797304988607277,6.5159760230790651,4.8209202288849555,4.3447111465326858,5.9413428424626487,6.6510505862482638,4.5603521832038494,4.0369573304830224,6.1764096202502508,10.886144554992494,5.0719804255219092,5.8733683703859203,4.9412396439815796,6.4729737338353415,3.7959472695675096,4.8952602999334056,4.8605573751015694,11.258689175585593,4.8079490607633515,6.6423787457540175,9.0366534218734813,3.8217395185493834,5.3197636831003265,6.8883995528043753,4.6796487198669601,6.3338093468749816,5.3967332133595551,5.0592216493910325,4.8567744576311336,4.0497132927355493,4.6171467965453798,6.0055194543828696,9.8441229861480206,5.5649296341982,6.7648869823866482,5.770103455289691,4.9765085898777404,4.1858152459536884,5.1932490220177714,5.0425020705536197,3.8565312573346522,5.759600119262549,5.111784759140634,5.4054864401581879,4.0054461442636571,4.1647361075603584,4.9559234124802307,4.5042474518692748,5.3881617683390841,4.3205109160406936,3.8669645457065092,3.9274065621006797,5.9974700201205584,3.8678221892722271,5.7719763116936749,5.2098450643561813,8.0345713856604082,5.3030534976296604,5.021025300194716,4.3438699830112988,3.9344587355139167,4.3962221504124068,5.521716611346057,8.3317130675070015,3.7795275590551185,7.6248188298069568,7.0301405457189095,7.1496189141979007,4.7121109964863743,12.901246815808628,6.6756293410010024,3.9345663291882902,3.8499320709177383,3.9359721456761405,8.6949239983952289,4.0495681450853738,4.0045184963153311,4.4538769814637362,6.5788268903946889,7.5998835012479296,5.9097876260488702],"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,0,0,1)"}},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":43.762557077625573,"r":7.3059360730593621,"b":40.182648401826498,"l":37.260273972602747},"font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"World countries: GDP growth vs unemployment","font":{"color":"rgba(0,0,0,1)","family":"","size":17.534246575342465},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-3.2075284789558065,2.4152181927748768],"tickmode":"array","ticktext":["-3","-2","-1","0","1","2"],"tickvals":[-3,-2,-1,4.4408920985006262e-16,1,2],"categoryorder":"array","categoryarray":["-3","-2","-1","0","1","2"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"y","title":{"text":"GDP growth","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1.2725500000000001,29.143549999999998],"tickmode":"array","ticktext":["0","10","20"],"tickvals":[0,10,20],"categoryorder":"array","categoryarray":["0","10","20"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.6529680365296811,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":11.68949771689498},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"x","title":{"text":"Unemployment)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"16fcb28c371bc":{"x":{},"y":{},"size":{},"text":{},"type":"scatter"}},"cur_data":"16fcb28c371bc","visdat":{"16fcb28c371bc":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<p>Here we see that there seems to be a clear trend that the biggest populations are the ones with some of the highest GDP growth rates, and are on the lower side of unemployement rates. But we also see many outliers and no clear linear or symmetric trend in the distribution.</p>
+</section>
+<section id="pca-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="pca-analysis">PCA Analysis</h2>
+<p>The Principal Components Analysis is an interdependence technique which aims to reduce the data set to a more manageable size while retaining as much of the original information as possible. Since the units of measurement are different for most variables we scale the variables to account for this difference.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>pca <span class="ot">=</span> <span class="fu">prcomp</span>(X1_linear, <span class="at">scale =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(pca)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Importance of components:
+                          PC1    PC2    PC3    PC4    PC5     PC6     PC7
+Standard deviation     1.4536 1.0764 1.0322 1.0127 0.9336 0.88277 0.83208
+Proportion of Variance 0.2641 0.1448 0.1332 0.1282 0.1089 0.09741 0.08655
+Cumulative Proportion  0.2641 0.4089 0.5421 0.6703 0.7792 0.87666 0.96321
+                           PC8
+Standard deviation     0.54252
+Proportion of Variance 0.03679
+Cumulative Proportion  1.00000</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_screeplot</span>(pca, <span class="at">addlabels =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_contrib</span>(pca, <span class="at">choice =</span> <span class="st">"var"</span>, <span class="at">axes =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-8-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>With the Principal component analysis we generate a scree plot to visualize the output of the PCA, showing the proportion of variance explained by each principal component. Here we see that principal component number 1 explains 27,6% of the total variance (which is not that much) and the point of inflexion is already at the second principal component. This is where the rate of decrease in explained variance begins to flatten out. This point suggests the optimal number of principal components to retain. Ideally we would like to keep enough principal components to explain at least 75% of the variance of the data, here we should choose either only the 1st principle component (explaining less than 30% of the variance) or the first 7 (capturing 96,6% of the variance).</p>
+<p>Thus we can see that the principal component analysis here is not very effective in reducing the data set. This is probably because the data being studied was not extremely linear and didn’t have strong relationships among variables.</p>
+<p>In the final plot here we see the different absolute contributions of all the variables to the principle component 1. So it represents the importance of each variable in determining the structure of the principal component. Absolute contributions provide insights into the relative importance of variables in explaining the variation captured by the principal component. Variables with higher absolute contributions have a greater influence on the structure of the component, so here we see that gdp per capita and age dependency ratio are the most significant contributors. The dotted line represents the average contribution of the variables, so those 2 variables are above average contributors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(pca<span class="sc">$</span>rotation[,<span class="dv">1</span>], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This final plot explores the 1st and most significant principal component and its loadings for each variable. Each bar represents the magnitude and direction of the loading of a variable on PC1. Positive loadings indicate a positive association with PC1, while negative loadings indicate a negative association. The length of the bar indicates the strength of the association, with longer bars indicating stronger relationships. Here in this case we see that the strongest relationship is gdp per capita which is negative and age dependency ratio which is positively related.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>names[<span class="fu">order</span>(pca<span class="sc">$</span>x[,<span class="dv">1</span>])][<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Brunei Darussalam"    "United Arab Emirates" "Greenland"           
+ [4] "Singapore"            "Qatar"                "Bermuda"             
+ [7] "Cayman Islands"       "Norway"               "Bahamas, The"        
+[10] "Palau"               </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>names[<span class="fu">order</span>(pca<span class="sc">$</span>x[,<span class="dv">1</span>], <span class="at">decreasing=</span>T)][<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Angola"           "Burundi"          "Congo, Dem. Rep." "Somalia"         
+ [5] "Niger"            "Gambia, The"      "Malawi"           "Uganda"          
+ [9] "Burkina Faso"     "Chad"            </code></pre>
+</div>
+</div>
+<p>Here we see in the first output it gives these 10 country names that correspond to the countries with the lowest values in the first principal component, indicating that they have the least influence on this component. The second output shows the top 10 countries with the highest influence on the first component. These results dont support my initial hypothesis and has for example Sweden and Bahrain in the same group as not big influencers to the first principal component. However the PC1 was all about gdp per capita and age denedency ratio, so maybe this has something to do with the specific makeup of these nations with those variables specifically in mind. The top countries seem to largely be countries in Africa, which are largely known to have low GDPs per capita but have high birth rates and lots of children to support the older generations, so this makes sense with the first principal component.</p>
+<p>Next to check out PC2.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_contrib</span>(pca, <span class="at">choice =</span> <span class="st">"var"</span>, <span class="at">axes =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(pca<span class="sc">$</span>rotation[,<span class="dv">2</span>], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>names[<span class="fu">order</span>(pca<span class="sc">$</span>x[,<span class="dv">2</span>])][<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "Equatorial Guinea"        "Kosovo"                  
+ [3] "Eritrea"                  "Central African Republic"
+ [5] "Jordan"                   "Gabon"                   
+ [7] "West Bank and Gaza"       "Belize"                  
+ [9] "South Africa"             "Namibia"                 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>names[<span class="fu">order</span>(pca<span class="sc">$</span>x[,<span class="dv">2</span>], <span class="at">decreasing=</span>T)][<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "China"            "India"            "Macao SAR, China" "United States"   
+ [5] "Moldova"          "Djibouti"         "Pakistan"         "Indonesia"       
+ [9] "Ireland"          "Viet Nam"        </code></pre>
+</div>
+</div>
+<p>This next PC is interesting and shows that the most important variables are unemployment and population (clearly) along with the gini coefficient. We see that unemployment has a negative association with the PC2 and population and the ginicoefficient have positive associations, while many variables follow closely behind in magnitude of the association.</p>
+<p>The countries shown in the top and bottom of this PC are less clear than the first PC. We see countries from many different regions around the world, but they must have similar situations with relative importance of unemployment and population.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">z1=</span>pca<span class="sc">$</span>x[,<span class="dv">1</span>],<span class="at">z2=</span>pca<span class="sc">$</span>x[,<span class="dv">2</span>]) <span class="sc">%&gt;%</span> </span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(z1,z2,<span class="at">label=</span>names,<span class="at">color=</span>continent)) <span class="sc">+</span> <span class="fu">geom_point</span>(<span class="at">size=</span><span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"First two principal components (scores)"</span>, <span class="at">x=</span><span class="st">"PC1"</span>, <span class="at">y=</span><span class="st">"PC2"</span>) <span class="sc">+</span> <span class="co">#guides(color=guide_legend(title="HDI"))+</span></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span><span class="fu">theme</span>(<span class="at">legend.position=</span><span class="st">"bottom"</span>) <span class="sc">+</span> <span class="fu">geom_text</span>(<span class="at">size=</span><span class="dv">3</span>, <span class="at">hjust=</span><span class="fl">0.6</span>, <span class="at">vjust=</span><span class="dv">0</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">z1=</span><span class="sc">-</span>pca<span class="sc">$</span>x[,<span class="dv">1</span>],<span class="at">Region=</span>continent) <span class="sc">%&gt;%</span> </span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(X<span class="sc">$</span>continent) <span class="sc">%&gt;%</span> </span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean=</span><span class="fu">mean</span>(z1), <span class="at">n=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(mean))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  `X$continent`    mean     n
+  &lt;chr&gt;           &lt;dbl&gt; &lt;int&gt;
+1 Europe         0.794     48
+2 Americas       0.774     44
+3 Oceania        0.443     19
+4 Asia           0.0283    50
+5 Africa        -1.58      52</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Map our PCA index in a map:</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>map <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">country=</span>names, <span class="at">value=</span><span class="sc">-</span>pca<span class="sc">$</span>x[,<span class="dv">1</span>])</span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert the country code into iso3c using the function countrycode()</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>map<span class="sc">$</span>country <span class="ot">=</span> <span class="fu">countrycode</span>(map<span class="sc">$</span>country, <span class="st">'country.name'</span>, <span class="st">'iso3c'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Some values were not matched unambiguously: Channel Islands, Kosovo</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create data object supporting the map</span></span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>matched <span class="ot">&lt;-</span> <span class="fu">joinCountryData2Map</span>(map, <span class="at">joinCode =</span> <span class="st">"ISO3"</span>,</span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nameJoinColumn =</span> <span class="st">"country"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>210 codes from your data successfully matched countries in the map
+3 codes from your data failed to match with a country code in the map
+33 codes from the map weren't represented in your data</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Draw the map</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mapCountryData</span>(matched,<span class="at">nameColumnToPlot=</span><span class="st">"value"</span>,<span class="at">missingCountryCol =</span> <span class="st">"white"</span>,</span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">addLegend =</span> <span class="cn">FALSE</span>, <span class="at">borderCol =</span> <span class="st">"#C7D9FF"</span>,</span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">catMethod =</span> <span class="st">"pretty"</span>, <span class="at">colourPalette =</span> <span class="st">"terrain"</span>,</span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapTitle =</span> <span class="fu">c</span>(<span class="st">"PCA1 by Country"</span>), <span class="at">lwd=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>You asked for 7 categories, 8 were used due to pretty() classification</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Interestingly the PCA analysis shows that the Americas and Europe have a very similar mean and have much higher values than the rest of the world, showing a stronger mean of negative values for the first principal component.</p>
+<p>Finally we see a map to show how each country is shaded according to the value of the first principal component (PCA1), green colors indicate lower values of the PCA1 score. In the context of this PCA, lower scores might represent certain characteristics or patterns in the data, here the most important variables were GDP per capita and age dependency ratio. The borwn/ red colors then conversely represent higher values of the PCA1 score. The color range mostly goes according to region, which is expected, the Americas and Europe are all mostly green while Africa is mostly yellow/ organge.</p>
+</section>
+<section id="clustering" class="level2">
+<h2 class="anchored" data-anchor-id="clustering">Clustering</h2>
+<p>Then we move to the next analysis method and aim to make some clusters. We ensure to get the correct variables and we standardize the data as different units have been used.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a>X2 <span class="ot">&lt;-</span> X <span class="sc">|&gt;</span> </span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(date, country, continent, iso2c)) <span class="sc">|&gt;</span> </span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pop =</span> <span class="fu">log</span>(pop)) <span class="co">#for better symmetry</span></span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardize the data</span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a>scaled_X2 <span class="ot">&lt;-</span> <span class="fu">scale</span>(X2)</span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-8"><a href="#cb81-8" aria-hidden="true" tabindex="-1"></a><span class="co">#create_report(X2) to check distributions</span></span>
+<span id="cb81-9"><a href="#cb81-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-10"><a href="#cb81-10" aria-hidden="true" tabindex="-1"></a>fit <span class="ot">=</span> <span class="fu">kmeans</span>(scaled_X2, <span class="at">centers =</span> <span class="dv">6</span>, <span class="at">nstart =</span> <span class="dv">1000</span>)</span>
+<span id="cb81-11"><a href="#cb81-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb81-12"><a href="#cb81-12" aria-hidden="true" tabindex="-1"></a>fit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>K-means clustering with 6 clusters of sizes 50, 57, 10, 46, 7, 43
+
+Cluster means:
+      a_land   inflation      gdp_gr      gdp_pc         gini      unemp
+1  0.3998595  0.01913443  0.27680787 -0.13237884  0.676140971 -0.2024935
+2 -0.3062244 -0.27768602 -0.14615282  1.03095330 -0.709612309 -0.4711284
+3 -0.6218058  0.65711925 -2.77067969 -0.03579993 -0.324645164  0.2542643
+4 -0.4938547 -0.38507545  0.06046418  0.22531564  0.002113336  1.2515539
+5 -0.4014466  3.93913499  0.65375081 -0.68428836  1.149386214 -0.1395612
+6  0.6792399 -0.03628571  0.34510481 -1.33399762  0.040567156 -0.5153069
+       agedr         pop
+1 -0.4241839  0.74910667
+2 -0.6490562 -0.13394253
+3  0.2909671 -0.09004366
+4 -0.2385602 -1.12714569
+5  0.7833666  0.95271544
+6  1.4136263  0.37812840
+
+Clustering vector:
+  [1] 4 6 5 4 2 2 1 4 4 2 2 1 6 2 6 6 1 1 2 2 4 2 4 2 1 1 4 3 2 1 6 2 2 2 2 1 6
+ [38] 6 5 5 1 6 4 1 1 4 2 2 2 2 6 4 2 1 3 1 5 4 1 2 6 2 4 2 2 3 3 2 4 6 4 6 6 6
+ [75] 3 4 4 2 1 4 4 2 1 2 6 2 1 4 1 2 5 5 2 2 2 1 4 3 1 6 6 1 6 4 2 2 1 1 6 1 4
+[112] 4 1 6 2 2 2 2 4 1 4 2 6 4 1 4 4 6 2 1 4 1 4 6 6 2 6 1 4 4 6 6 1 2 2 1 4 2
+[149] 2 6 1 1 1 4 3 2 2 1 2 1 4 2 2 1 1 6 1 6 2 4 6 1 4 6 1 6 6 4 2 2 2 6 2 2 6
+[186] 4 6 6 1 6 1 4 3 2 1 1 4 6 6 1 3 1 5 4 4 4 1 6 4 4 3 1 6
+
+Within cluster sum of squares by cluster:
+[1] 204.42084 204.40125  72.08306 222.27945  28.72716 169.07451
+ (between_SS / total_SS =  46.9 %)
+
+Available components:
+
+[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
+[6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
+</div>
+</div>
+<p>Here we see the results of running the k-means clustering with 6 clusters on the dataset. We note the difference of sizes of the clusters, eg the first cluster has 57 observations, the second has 43, the third has 38 and we can obtain the mean values for each variable for each cluster.</p>
+<p>We also get an idea for the general goodness of fit of a cluster, using the Cluster Sum of Squares. This provides the sum of squared distances of each point within a cluster to the centroid of that cluster. It’s a measure of how tightly the observations are clustered around the centroid within each cluster. In this case the given values are quite high actually.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>centers<span class="ot">=</span>fit<span class="sc">$</span>centers</span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb83-3"><a href="#cb83-3" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">1</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">2</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">3</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">4</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-4.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">5</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-5.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a><span class="fu">barplot</span>(centers[<span class="dv">6</span>,], <span class="at">las=</span><span class="dv">2</span>, <span class="at">col=</span><span class="st">"darkblue"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-15-6.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we have a visualization of the characteristics of each cluster, specifically the mean values of variables across different clusters. For example in the first cluster we would have countries with an above average gdp per capita but lower than average values for everything else. The second cluster is countries that have alot of arable land and a low index of equality. The third index could be countries with high levels of equality but little arable land and not very big populations, maybe this could include countries like Germany or France? Cluster 5 could be countries with low GDPs, but a high age dependency ratio and arable land and population.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># clusplot</span></span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_cluster</span>(fit, <span class="at">data =</span> scaled_X2, <span class="at">geom =</span> <span class="fu">c</span>(<span class="st">"point"</span>),<span class="at">ellipse.type =</span> <span class="st">'norm'</span>, <span class="at">pointsize=</span><span class="dv">1</span>)<span class="sc">+</span></span>
+<span id="cb89-3"><a href="#cb89-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()<span class="sc">+</span><span class="fu">geom_text</span>(<span class="at">label=</span>names,<span class="at">hjust=</span><span class="dv">0</span>, <span class="at">vjust=</span><span class="dv">0</span>,<span class="at">size=</span><span class="dv">2</span>,<span class="at">check_overlap =</span> F)<span class="sc">+</span><span class="fu">scale_fill_brewer</span>(<span class="at">palette=</span><span class="st">"Paired"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(scaled_X2, kmeans, <span class="at">method =</span> <span class="st">'wss'</span>, <span class="at">k.max =</span> <span class="dv">20</span>, <span class="at">nstart =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(scaled_X2, kmeans, <span class="at">method =</span> <span class="st">'silhouette'</span>, <span class="at">k.max =</span> <span class="dv">20</span>, <span class="at">nstart =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-17-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_nbclust</span>(scaled_X2, kmeans, <span class="at">method =</span> <span class="st">'gap_stat'</span>, <span class="at">k.max =</span> <span class="dv">10</span>, <span class="at">nstart =</span> <span class="dv">100</span>, <span class="at">nboot =</span> <span class="dv">500</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: did not converge in 10 iterations
+
+Warning: did not converge in 10 iterations
+
+Warning: did not converge in 10 iterations
+
+Warning: did not converge in 10 iterations
+
+Warning: did not converge in 10 iterations
+
+Warning: did not converge in 10 iterations</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-17-3.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we do an investigation to figure out what the optimal amount of clusters would be. The first graph shows this using the “within-cluster sum of squares” (WSS) method. It computes the total within-cluster sum of squares for different values of k (number of clusters) and plots the curve. The optimal number of clusters is often chosen as the inflexion point, but in this first plot this isnt so clear, but could be around 7 to 10. In the second plot the silhouette method is used and we see that it suggests 7 clusters as the optimal number of clusters. In the third plot the gap statistic method was used and we see it suggests using 8 clusters.</p>
+<p>Since to me it seems like the inflexion point may be more at the point of 7 clusters, I will settle on 7 clusters.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>fit.km <span class="ot">=</span> <span class="fu">kmeans</span> (scaled_X2, <span class="at">centers =</span> <span class="dv">7</span>, <span class="at">nstart =</span> <span class="dv">1000</span>) </span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a><span class="co">#nstart is the number of computations</span></span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>fit.km</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>K-means clustering with 7 clusters of sizes 39, 18, 42, 8, 37, 44, 25
+
+Cluster means:
+       a_land   inflation     gdp_gr     gdp_pc        gini       unemp
+1  0.67634076  0.05733522  0.2987600 -1.3999938  0.13287316 -0.48686343
+2  0.05025864 -0.26394162 -0.7352101 -0.1308685  0.02214265  2.19693367
+3  0.09166097 -0.17994840  0.3017060 -0.1020445  0.86441742 -0.39749740
+4 -0.28215529  3.72809952  0.5763503 -0.5507513  1.12409144 -0.04715856
+5  0.69779274 -0.14781697  0.2782135  0.5236823 -0.87296633 -0.35069361
+6 -0.75177473 -0.39004378  0.2140476  0.4727546 -0.07049862  0.53354521
+7 -0.86458828  0.11516265 -1.4164924  1.0187928 -0.61908765 -0.55941195
+        agedr         pop
+1  1.53187033  0.52263887
+2  0.08003236 -0.03520025
+3 -0.39116348  0.72863494
+4  0.59974769  0.98835147
+5 -0.35381310  0.15502322
+6 -0.43701937 -1.39583395
+7 -0.68930815 -0.10311823
+
+Clustering vector:
+  [1] 6 1 4 5 6 7 5 6 6 5 5 3 1 5 1 1 3 3 7 6 2 5 2 7 3 3 6 7 6 3 1 7 5 7 3 3 1
+ [38] 1 4 4 3 1 6 3 3 6 6 6 5 7 5 6 5 3 2 3 4 2 2 5 1 7 2 5 5 7 2 5 3 1 6 1 1 1
+ [75] 2 2 6 7 3 6 6 7 3 5 1 5 3 2 3 5 4 4 6 3 7 3 2 7 5 1 5 3 6 6 7 7 3 3 1 3 6
+[112] 6 3 1 5 7 5 5 6 5 6 5 1 6 3 6 2 1 5 3 6 5 6 1 1 5 1 3 2 6 1 1 3 5 7 3 6 3
+[149] 7 1 3 3 3 6 7 5 6 3 5 3 2 6 7 5 3 1 5 1 7 6 1 3 6 1 5 1 1 6 5 5 7 5 6 6 1
+[186] 6 1 1 3 1 3 2 7 7 2 4 6 1 1 5 7 3 4 6 6 6 3 6 6 2 1 2 1
+
+Within cluster sum of squares by cluster:
+[1] 150.05806  94.70999 128.50300  35.82534 108.81069 168.59241 145.63167
+ (between_SS / total_SS =  50.9 %)
+
+Available components:
+
+[1] "cluster"      "centers"      "totss"        "withinss"     "tot.withinss"
+[6] "betweenss"    "size"         "iter"         "ifault"      </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select here your favorite clustering tool</span></span>
+<span id="cb96-2"><a href="#cb96-2" aria-hidden="true" tabindex="-1"></a>map <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">country=</span>names, <span class="at">value=</span>fit.km<span class="sc">$</span>cluster)</span>
+<span id="cb96-3"><a href="#cb96-3" aria-hidden="true" tabindex="-1"></a><span class="co">#map = data.frame(country=names, value=fit.kmeans$cluster)</span></span>
+<span id="cb96-4"><a href="#cb96-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb96-5"><a href="#cb96-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert the country code into iso3c using the function countrycode()</span></span>
+<span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>map<span class="sc">$</span>country <span class="ot">=</span> <span class="fu">countrycode</span>(map<span class="sc">$</span>country, <span class="st">'country.name'</span>, <span class="st">'iso3c'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Some values were not matched unambiguously: Channel Islands, Kosovo</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create data object supporting the map</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>matched <span class="ot">&lt;-</span> <span class="fu">joinCountryData2Map</span>(map, <span class="at">joinCode =</span> <span class="st">"ISO3"</span>,</span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nameJoinColumn =</span> <span class="st">"country"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>210 codes from your data successfully matched countries in the map
+3 codes from your data failed to match with a country code in the map
+33 codes from the map weren't represented in your data</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Draw the map</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mapCountryData</span>(matched,<span class="at">nameColumnToPlot=</span><span class="st">"value"</span>,<span class="at">missingCountryCol =</span> <span class="st">"white"</span>,</span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">borderCol =</span> <span class="st">"#C7D9FF"</span>,</span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">catMethod =</span> <span class="st">"pretty"</span>, <span class="at">colourPalette =</span> <span class="st">"rainbow"</span>,</span>
+<span id="cb100-5"><a href="#cb100-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapTitle =</span> <span class="fu">c</span>(<span class="st">"Clusters"</span>), <span class="at">lwd=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>You asked for 7 categories, 6 were used due to pretty() classification</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The map that we see has many regional groupings that make sense, eg. the Nordics and Canada in cluster 1, central Europe grouped in cluster 6 with some interesting countries like Australia and Turkey and India.</p>
+<p>I also tried this out with 8 clusters, and the clusters to me seemed more all over the place, which further confirmed that 7 clusters seems to be the ideal amount. Next we move to hierarchical clustering.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Enter your code here </span></span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">=</span> <span class="fu">dist</span>(scaled_X2, <span class="at">method =</span> <span class="st">"euclidean"</span>) </span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>hc <span class="ot">&lt;-</span> <span class="fu">hclust</span>(d, <span class="at">method =</span> <span class="st">"ward.D2"</span>) </span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-5"><a href="#cb102-5" aria-hidden="true" tabindex="-1"></a>hc<span class="sc">$</span>labels <span class="ot">&lt;-</span> names</span>
+<span id="cb102-6"><a href="#cb102-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb102-7"><a href="#cb102-7" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_dend</span>(<span class="at">x =</span> hc, </span>
+<span id="cb102-8"><a href="#cb102-8" aria-hidden="true" tabindex="-1"></a>          <span class="at">k=</span><span class="dv">7</span>,</span>
+<span id="cb102-9"><a href="#cb102-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">palette =</span> <span class="st">"jco"</span>, </span>
+<span id="cb102-10"><a href="#cb102-10" aria-hidden="true" tabindex="-1"></a>          <span class="at">rect =</span> <span class="cn">TRUE</span>, <span class="at">rect_fill =</span> <span class="cn">TRUE</span>, <span class="at">cex=</span><span class="fl">0.5</span>,</span>
+<span id="cb102-11"><a href="#cb102-11" aria-hidden="true" tabindex="-1"></a>          <span class="at">rect_border =</span> <span class="st">"jco"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `&lt;scale&gt;` argument of `guides()` cannot be `FALSE`. Use "none" instead as
+of ggplot2 3.3.4.
+ℹ The deprecated feature was likely used in the factoextra package.
+  Please report the issue at &lt;https://github.com/kassambara/factoextra/issues&gt;.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_dend</span>(<span class="at">x =</span> hc, </span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">k=</span><span class="dv">8</span>,</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">palette =</span> <span class="st">"jco"</span>, </span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">rect =</span> <span class="cn">TRUE</span>, <span class="at">rect_fill =</span> <span class="cn">TRUE</span>, <span class="at">cex=</span><span class="fl">0.5</span>,</span>
+<span id="cb104-5"><a href="#cb104-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">rect_border =</span> <span class="st">"jco"</span> )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-20-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we see with this method we can compare the different dendograms if we were to cluster with 7 or 8 clusters. I see thataccording to this maybe 8 clusters could be better, but with the map from earlier I still trust the 7 cluster allocation better.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">fviz_dend</span>(<span class="at">x =</span> hc,</span>
+<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>          <span class="at">k =</span> <span class="dv">7</span>,</span>
+<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">color_labels_by_k =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">cex =</span> <span class="fl">0.8</span>,</span>
+<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">type =</span> <span class="st">"phylogenic"</span>,</span>
+<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">repel =</span> <span class="cn">TRUE</span>)<span class="sc">+</span>  <span class="fu">labs</span>(<span class="at">title=</span><span class="st">"Economic health tree clustering of the world"</span>) <span class="sc">+</span> <span class="fu">theme</span>(<span class="at">axis.text.x=</span><span class="fu">element_blank</span>(),<span class="at">axis.text.y=</span><span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we can visualize which countries are where better and we see that this clustering seems to make sense generally.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a>groups.hc <span class="ot">=</span> <span class="fu">cutree</span>(hc, <span class="at">k =</span> <span class="dv">7</span>)</span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Map our PCA index in a map:</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>map <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">country=</span>names, <span class="at">value=</span>groups.hc)</span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Convert the country code into iso3c using the function countrycode()</span></span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a>map<span class="sc">$</span>country <span class="ot">=</span> <span class="fu">countrycode</span>(map<span class="sc">$</span>country, <span class="st">'country.name'</span>, <span class="st">'iso3c'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Some values were not matched unambiguously: Channel Islands, Kosovo</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Create data object supporting the map</span></span>
+<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a>matched <span class="ot">&lt;-</span> <span class="fu">joinCountryData2Map</span>(map, <span class="at">joinCode =</span> <span class="st">"ISO3"</span>,</span>
+<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">nameJoinColumn =</span> <span class="st">"country"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>210 codes from your data successfully matched countries in the map
+3 codes from your data failed to match with a country code in the map
+33 codes from the map weren't represented in your data</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Draw the map</span></span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mapCountryData</span>(matched,<span class="at">nameColumnToPlot=</span><span class="st">"value"</span>,<span class="at">missingCountryCol =</span> <span class="st">"white"</span>,</span>
+<span id="cb110-3"><a href="#cb110-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">borderCol =</span> <span class="st">"#C7D9FF"</span>,</span>
+<span id="cb110-4"><a href="#cb110-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">catMethod =</span> <span class="st">"pretty"</span>, <span class="at">colourPalette =</span> <span class="st">"rainbow"</span>,</span>
+<span id="cb110-5"><a href="#cb110-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapTitle =</span> <span class="fu">c</span>(<span class="st">"Clusters"</span>), <span class="at">lwd=</span><span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>You asked for 7 categories, 6 were used due to pretty() classification</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>On the map however I remain confused about how many parts of africa are clustered with central Europe and why Greece is clustered with the Americas and much of Asia.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a><span class="fu">heatmap</span>(scaled_X2, <span class="at">scale =</span> <span class="st">"none"</span>, <span class="at">labRow =</span> names,</span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">distfun =</span> <span class="cf">function</span>(x){<span class="fu">dist</span>(x, <span class="at">method =</span> <span class="st">"euclidean"</span>)},</span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">hclustfun =</span> <span class="cf">function</span>(x){<span class="fu">hclust</span>(x, <span class="at">method =</span> <span class="st">"ward.D2"</span>)},</span>
+<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">cexRow =</span> <span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Midterm-assignment_-AS_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here we can get a better idea of what variables were the most important in each cluster. With this we can see for example that one cluster with countries such as Jordan and Armenia is clustered due to their high rates of unemployment.</p>
+</section>
+<section id="conclusions" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions">Conclusions</h2>
+<p>In this assignment I conducted the PCA analysis and multiple techniques for clustering. With these techniques I was able to group the countries and variables and discover more about their relative importance in the data set. In the PCA analysis, it was noted that the analysis wasn’t very useful as it wasn’t able to successfully significantly reduce the data set. The most important variables in PC1 were GDP per capita and age dependency ratio, indicating that these factors play a crucial role in explaining the variability in the dataset. But together PC1 was only able to explain around 30% of the variability, so it wasn’t very useful. But The combination of PCA and clustering techniques allowed for a comprehensive exploration of the dataset, revealing patterns and structures that provide valuable insights into global socioeconomic dynamics. Further research and refinement of clustering methodologies should enhance the accuracy and granularity of the results, and especially with the PCA analysis more transformations or different variables should have been chosen to get more useful results. But with this exploration we can see which variables have seemed important in the clustering and grouping of countries, and by far it seems that GDP per capita, unemployment and the age dependency ratio have consistently showed themselves as the most influential variables of the dataset in this exploration. So I note that in relations to my inital idea to explore gdp growth, I see that gdp growth had the most influential impact on cluster #2, but otherwise had very low values influencing the other clusters. In the PCA analysis we also noted that gdp growth wasnt one of the most influential variables in the analysis.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

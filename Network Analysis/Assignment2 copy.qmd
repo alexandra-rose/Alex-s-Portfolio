@@ -1,0 +1,221 @@
+---
+title: "Link prediction assignment- Alexandra Salo "
+format: html
+editor: visual
+---
+
+### Import the network data into R and create a graph using igraph
+
+```{r}
+library(tidyverse)
+library(igraph)
+library(visNetwork)
+library(ggplot2)
+library(ggthemes)
+```
+
+```{r}
+# Read in the network data
+network_edge_list <- read.csv("Homework 1/NetworkofscientificcollaborationsbetweenNewZealandinstitutionsbasedonScopuspublicationsfrom2010to2015/NZ scientific collaboration network/Network edge list.csv")
+
+# Rename 'CollaborationRecord' to 'weight'
+names(network_edge_list)[names(network_edge_list) == "CollaborationRecord"] <- "weight"
+
+# Make sure the collaboration record is numeric
+network_edge_list$weight <- as.numeric(as.character(network_edge_list$weight))
+
+# Create the graph with edge weights
+g <- graph_from_data_frame(network_edge_list, directed = FALSE)
+
+g <- simplify(g)
+
+g
+```
+
+### Delete a fraction of real edges in the network and create a table of those links deleted (positive class) and of links non-present (negative class)
+
+```{r}
+set.seed(123)  # Ensuring reproducibility
+nlinks <- 1000
+ii <- sample(1:ecount(g),nlinks)
+gp <- delete_edges(g,ii)
+```
+
+We put the deleted edges in a table
+
+```{r}
+true_edges <- data.frame(get.edges(g,ii))
+```
+
+Now I have deleted 1000 random links, and created 2 classes (deleted, non-deleted).
+
+### Generate a number of proximity/similarty metrics heuristics for each link in the positive and negative class
+
+To see how well our heuristics perform, we need to compare how well they predict the delete edges with their prediction of non-existent links (our negative class).
+
+```{r}
+false_edges <- data.frame()
+most_connected <- which(degree(g)>10)
+for(i in 1:nlinks){
+  i1 <- sample(most_connected,1)
+  i2 <- sample(most_connected,1)
+  if(!are_adjacent(g,i1,i2)) false_edges <- rbind(false_edges,data.frame(X1=i1,X2=i2))
+}
+```
+
+We put together both types of links and add a `obs` variable to distinguish between real and non-existent links.
+
+```{r}
+true_edges <- data.frame(true_edges,obs=1)
+false_edges <- data.frame(false_edges,obs=0)
+
+total_edges <- rbind(true_edges,false_edges)
+colnames(total_edges) <- c("id1","id2","obs")
+```
+
+Now we calculate the neighborhood of the nodes at each size of the links considered
+
+```{r}
+n1 <- neighborhood(gp,order=1,nodes=total_edges$id1)
+n2 <- neighborhood(gp,order=1,nodes=total_edges$id2)
+```
+
+Now we calculate the heuristics for each link. 
+
+```{r}
+total_edges$sim_jacc <- 0
+total_edges$sim_aa <- 0
+total_edges$sim_pref <- 0
+for(i in 1:nrow(total_edges)){
+   common_neigh <- intersect(n1[[i]],n2[[i]])
+   all_neigh <- union(n1[[i]],n2[[i]])
+   degree_common_neigh <- degree(gp,common_neigh)
+   total_edges$sim_jacc[i] <- length(common_neigh)/(length(all_neigh)-2)
+   if(length(common_neigh)>0) total_edges$sim_aa[i] <- sum(1/log(degree_common_neigh))
+   total_edges$sim_pref[i] <- length(n1[[i]])*length(n2[[i]])
+}
+```
+
+Then investigate the heuristics for the different types of links. 
+
+```{r}
+total_edges %>% pivot_longer(c(sim_jacc,sim_aa,sim_pref)) %>%
+  ggplot(aes(x=as.factor(obs),y=value)) + geom_boxplot() + facet_wrap(~name,scales="free")
+```
+Here we can see 3 methods for different similarity or proximity metrics, Adamic-Adar index (sim_aa), Jaccard coefficient (sim_jacc), and Preferential Attachment (sim_pref)—across the two classes of links: existing links (obs=1) and non-existing links (obs=0). Here they are used to assess the likelihood of a link existing between two nodes based on their neighborhood and connectivity properties.
+
+In the Adamic-Adar index the values for existing links are generally higher, suggesting that existing links are more likely to occur between nodes that share neighbors with fewer connections, possibly indicating tighter and more exclusive communities within the network.
+
+From the plot, the median Jaccard coefficient for existing links (obs=1) is higher than for non-existing links (obs=0), indicating that nodes in existing links tend to share more neighbors relative to the total unique neighbors they have, compared to non-existing links. 
+
+In the final method while there is significant variability (significant outliers), the distribution for existing links tends to be higher, which suggests that links are more likely between nodes that are both well-connected.
+
+Based on the plots, the Adamic-Adar index might be considered particularly important as it differentiates more clearly between the classes compared to the others, with a generally higher range of values for existing links than for non-existing ones. This indicates it could be a stronger predictor of actual links due to its emphasis on the quality of shared connections (i.e., connections via less popular nodes which may signify stronger or more meaningful real-world interactions).
+
+### Train a binary classifier to predict the links, i.e., to predict the class (positive/negative) using those heuristics. Use crossvalidation.
+
+```{r}
+# Check for NA values
+summary(total_edges$sim_jacc) 
+summary(total_edges$sim_aa)
+summary(total_edges$sim_pref)
+
+# Check for infinite values
+sum(is.infinite(total_edges$sim_jacc))
+sum(is.infinite(total_edges$sim_aa))
+sum(is.infinite(total_edges$sim_pref))
+#Some values are NA or infinite. This is in the sim_aa (Adamic-Adar index) which is due to a division by the logarithm of a very small number, which might effectively result in infinity when the denominator approaches zero. This typically occurs when the degree of common neighbors is very low, and their log-transformed degree is close to zero. 
+
+#To be able to run the model, I will modify the Adamic-Adar Calculation and slightly modifying the metric with Laplace smoothing. The Adamic-Adar index is originally designed to give high weight to connections via low-degree nodes (implying that such connections are more significant). Adding 1 to the degree means that the influence of very low-degree nodes is somewhat reduced.
+for(i in 1:nrow(total_edges)){
+    common_neigh <- intersect(n1[[i]],n2[[i]])
+    all_neigh <- union(n1[[i]],n2[[i]])
+    degree_common_neigh <- degree(gp, common_neigh)
+
+    # Adjust Jaccard calculation to avoid division by zero
+    total_edges$sim_jacc[i] <- ifelse(length(all_neigh) > 2, length(common_neigh) / (length(all_neigh) - 2), 0)
+
+    # Adjust Adamic-Adar to avoid log of zero
+    if(length(common_neigh) > 0 && all(degree_common_neigh > 0)) {
+        total_edges$sim_aa[i] <- sum(1 / log(degree_common_neigh +1)) #here adding the +1 so that I don't get infinite values
+    } else {
+        total_edges$sim_aa[i] <- 0
+    }
+
+    # Preferential attachment simply multiplies degrees
+    total_edges$sim_pref[i] <- length(n1[[i]]) * length(n2[[i]])
+}
+#  
+
+# Check again for infinite values in the adjusted training dataset
+sum(is.infinite(total_edges$sim_aa))
+# Check again for infinite values in the adjusted testing dataset
+sum(is.infinite(total_edges$sim_aa))
+
+# Then we can move on with no NA values and without any infinite values, so we break the link sample into train and test
+ii <- sample(1:nrow(total_edges),0.75*nrow(total_edges))
+total_edges_train <- total_edges[ii,]
+total_edges_test <- total_edges[-ii,]
+```
+Now we have what we need to create our model. 
+
+```{r, results='asis'}
+#Next we build a glm logistic regression model
+require(stargazer)
+glm_link <- glm(obs ~ sim_jacc+sim_aa+sim_pref,
+                data=total_edges_train,family=binomial(link="logit"))
+stargazer(glm_link,type = "html",single.row = T,header=FALSE)
+```
+The model results suggest that only the Preferential Attachment index has a significant and expected influence on the presence of links. The lack of significance and unexpected signs for other metrics like the Jaccard index might require revisiting either the data, the preprocessing steps, or considering other modeling approaches that could handle potential data issues better (such as regularization techniques or different types of models like random forests or gradient boosting machines for classification tasks). 
+
+Additionally, I should consider exploring data transformation or feature engineering to improve model performance and address the warning regarding separation, which refers to a possible complete or quasi-complete separation model, where one or more predictor variables do a perfect or near-perfect job in predicting the outcome. This could mean that
+
+### Evaluate the precision of the model. Which heuristic is the most important. Why do you think it is the most important?
+
+```{r}
+# Finally we predict the probability for each link in the test
+glm_prediction <- predict.glm(glm_link,total_edges_test,type="response") 
+
+# If we use that only links with `glm_prediction` higher than 0.3 are real, then we get the following confusion matrix
+pred <- sign(glm_prediction > 0.4)
+table(pred,total_edges_test$obs,dnn=c("pred","obs"))
+
+#evaluating another method
+require(caret)
+confusionMatrix(factor(pred),factor(total_edges_test$obs),positive = "1")
+```
+The confusionMatrix function from the caret package offers a comprehensive summary of the model performance. 
+
+Accuracy: 55.43% which indicates that the model correctly predicts whether a link exists or not about 55.43% of the time.
+
+Sensitivity (Recall or True Positive Rate): 99.19% which indicates that the model is very good at identifying actual links (positive class).
+
+Specificity: Only 1.97% which is very low, indicating that the model is poor at identifying non-links (negative class).
+
+Positive Predictive Value (Precision): 55.28% which indicates that when the model predicts a link, it is correct about 55.28% of the time.
+
+Negative Predictive Value: 66.67% which indicates that when the model predicts no link, it is correct about 66.67% of the time.
+
+These metrics suggest that while the model is quite good at detecting true links, it struggles significantly with false positives—predicting links where none exist. This is further evidenced by the low specificity and the substantial number of false positives in the confusion matrix. With the layout of the model and the 'hub like' structure with a few highly connected nodes, this makes sense as many nodes have quite few nodes, thus not giving much information about possible connecting nodes. 
+
+```{r}
+#Which feature (similarity) is the most important?
+varImp(glm_link)
+```
+
+```{r}
+require(corrplot)
+cc <- cor(total_edges_test[,c("sim_jacc","sim_aa","sim_pref")])
+corrplot(cc)
+```
+Given the output from the correlation matrix and the coefficients from the logistic regression model (if varImp showed the variable importance with sim_pref showing high importance), we can deduce that:
+
+sim_pref is likely the most important heuristic in terms of contributing to the model's predictive ability. Its significance in the model and its role in predicting link formation based on node degree centrality align with established network theories (that suggest nodes with higher degrees are more likely to form links). This makes sense in the context of my 'hub like' network of collaborators where there are a few nodes that are extremely well connected in collaborations and the rest of the nodes are only connected to a few institutions at maximum.
+
+### Comment on potential ways to improve the link prediction
+
+This link prediction ultimately is quite terrible, and is only successfully able to predict positive class links well. Here are some ideas to improve this:
+
+- Feature Engineering: I should explore more complex features that combine multiple heuristics or incorporate network topology features beyond simple degree and neighbor-based measures.
+
+- Model Complexity: I should consider using more complex machine learning models that can capture nonlinear relationships and interactions between features better than logistic regression. Models such as Random Forests or Gradient Boosting Machines might provide improved performance, or maybe there would be a model that especially keeps these hub like networks in mind. 
